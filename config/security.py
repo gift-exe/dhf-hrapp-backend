@@ -11,7 +11,6 @@ from config.config import get_db
 from user import utils
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
-ALGORITHM = os.environ.get("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 oauthSchema = OAuth2PasswordBearer(tokenUrl='user/login')
@@ -28,7 +27,7 @@ def generate_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({'exp': expire})
-    encoded_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_token = jwt.encode(to_encode, SECRET_KEY)
     return encoded_token
 
 
@@ -36,7 +35,7 @@ def generate_access_token(data: dict):
 def verify_access_token(token: str, exception):
     try:
         token = token.replace('Bearer ','')
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY)
         id: str = payload.get('user_id')
         if id is None:
             raise exception

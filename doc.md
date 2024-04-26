@@ -15,6 +15,7 @@ Head of Sections:
 - Make comments on leave requests
 - They can share leave requests with the next office
 - Perform appraisal on a staff
+
 Admin:
 - Share documents with staff
 - Perform Appraisals on a staff
@@ -24,6 +25,7 @@ Admin:
 - Register Offices
 - Assign Head of Offices
 - Has access to all generated reports
+
 HR:
 - Registers All Users
 - Define Work Hours for each staff

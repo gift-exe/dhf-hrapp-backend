@@ -7,15 +7,15 @@ from config import security
 def get_user(db: Session, user_id):
     try:
         user = db.query(model.User).filter(model.User.id == user_id).first()
-        return True, user
+        return user
     except Exception as e:
-        return False, e
+        return e
 
 def create_user(db: Session, user: schema.CreateUser):
     try:
         hash_password = security.hash_string(user.password)
 
-        result = model.User(first_name = user.first_name, last_name = user.last_name, email = user.email, password = hash_password, phone = user.phone)
+        result = model.User(first_name = user.first_name, last_name = user.last_name, email = user.email, password = hash_password, phone = user.phone, role=user.role)
         db.add(result)
         db.commit()
         db.refresh(result)
