@@ -154,19 +154,22 @@ async def respond_to_leave_request(leave_res: schema.LeaveResponse,
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized to respond to leave. Must be an admin'}))
         
         if message.status != 'pending':
-            raise HTTPException(status_code=400, detail=json.dumps({'message':'Leave request has already been responded to'}))
+            raise HTTPException(status_code=400, detail=json.dumps({'message':'Leave request is not pending'}))
         
         if message.recipient_id != user.id:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Not the recipient of the request'}))
         
-        message.status = leave_res.status
-        db.commit()
-        db.refresh(message)
+        if (leave_res.status == 'approve') or (leave_res.status == 'disapprove') or (leave_res.status == 'approve-without-pay'):
+            message.status = leave_res.status
+            db.commit()
+            db.refresh(message)
 
-        #TODO: send notification to request sender
+            #TODO: send notification to request sender
 
-        return Response(status_code=200, content=json.dumps(schema.ReturnMessage.to_dict(msg=message, db=db).model_dump()))
-        
+            return Response(status_code=200, content=json.dumps(schema.ReturnMessage.to_dict(msg=message, comments=message.comments, db=db).model_dump()))
+        else:
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Invalid status response'}))
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 

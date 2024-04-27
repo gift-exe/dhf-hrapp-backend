@@ -33,7 +33,7 @@ async def signup(user: schema.CreateUser, db: Session = Depends(get_db)):
 async def login(creds: schema.Login, db: Session = Depends(get_db)):
     try:
         user = utils.get_user_by_email(email=creds.email, db=db)
-        print(f'user: {user}')
+        
         if not user:
             raise HTTPException(status_code=400, detail="User does not exist")
         

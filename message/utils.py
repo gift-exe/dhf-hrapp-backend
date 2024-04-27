@@ -26,7 +26,7 @@ def get_message(db: Session, message_id):
     except Exception as e:
         raise e
 def create_comment(db: Session, comment: schema.CreateComment, sender_id):
-    print(sender_id)
+    
     try:
         result = model.Comment(text=comment.text,
                                message_id=comment.message_id,
