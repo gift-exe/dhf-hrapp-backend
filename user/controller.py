@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import HTTPException, Depends, Response
-from user import utils, model, schema
+from user import utils, schema
 from config import security
 from sqlalchemy.orm import Session
 from config.database import SessionLocal
@@ -31,8 +31,9 @@ async def signup(user: schema.CreateUser, db: Session = Depends(get_db)):
 
 @router.post('/login/')
 async def login(creds: schema.Login, db: Session = Depends(get_db)):
-    try:
+    #try:
         user = utils.get_user_by_email(email=creds.email, db=db)
+        print(f'user: {user}')
         if not user:
             raise HTTPException(status_code=400, detail="User does not exist")
         
@@ -43,8 +44,8 @@ async def login(creds: schema.Login, db: Session = Depends(get_db)):
         
         return {'status': True, 'user_details':schema.User.to_dict(user).model_dump(), 'access_token': token, 'token_type': 'bearer'}
     
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+    #except Exception as e:
+    #    raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
     
 @router.post('/reset-password/')
 async def reset_password(password_change: schema.PasswordChange, db: Session = Depends(get_db), current_user_id = Depends(security.get_current_user)):

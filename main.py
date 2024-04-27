@@ -7,7 +7,7 @@ from message.controller import  router as message_router
 app = FastAPI()
 
 app.include_router(user_router, prefix='/user')
-app.include_router(message_router, prefix='/staff')
+app.include_router(message_router, prefix='/messages')
 
 Base.metadata.create_all(bind=engine)
 

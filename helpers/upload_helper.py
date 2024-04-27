@@ -11,21 +11,19 @@ client = session.client(
     aws_access_key_id=os.environ.get('SPACE_KEY'),
     aws_secret_access_key=os.environ.get('SPACE_SECRET'))
 
-def do_upload(file_to_upload):
+def do_upload(file_to_upload, sender_email):
     try:
         # create file name
-        name = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(10)) + '.' + file_to_upload.filename.split('.')[-1]
+        name = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(10)) + '.' + file_to_upload.filename + '.' + sender_email
         # upload file
-        client.upload_fileobj(file_to_upload, os.environ.get('SPACE_NAME'), name, ExtraArgs={'ACL': 'public-read'})
+        client.upload_fileobj(file_to_upload.file, os.environ.get('SPACE_NAME'), name, ExtraArgs={'ACL': 'public-read'})
         return f"{os.environ.get('SPACE_EDGE_ENDPOINT')}/{os.environ.get('SPACE_NAME')}/{name}"
     except Exception as e:
-        print(e)
-        return None
+        raise e
 
 def remove_upload(file_to_remove):
     try:
         client.delete_object(Bucket=os.environ.get('SPACE_NAME'), Key=file_to_remove)
         return True
     except Exception as e:
-        print(e)
-        return None
+        raise e

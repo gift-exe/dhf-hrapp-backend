@@ -9,7 +9,7 @@ def get_user(db: Session, user_id):
         user = db.query(model.User).filter(model.User.id == user_id).first()
         return user
     except Exception as e:
-        return e
+        raise e
 
 def create_user(db: Session, user: schema.CreateUser):
     try:
@@ -21,13 +21,13 @@ def create_user(db: Session, user: schema.CreateUser):
         db.refresh(result)
         return result
     except Exception as e:
-        return False, e
+        raise e
 
 def get_user_by_email(db: Session, email: str):
     try:
         return db.query(model.User).filter(model.User.email == email).first()
     except Exception as e:
-        return False, e
+        raise e
 
 def change_password(db: Session, password: str, id):
     try:
@@ -38,4 +38,4 @@ def change_password(db: Session, password: str, id):
         result.first()
         return True
     except Exception as e:
-        return False
+        raise e
