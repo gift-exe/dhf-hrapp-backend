@@ -120,8 +120,3 @@ async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(
 #status update on leave request
 
 #broad cast message
-
-@router.post('/file/')
-def files(file: UploadFile):
-    res = do_upload(file, 'hr@exec.mail')
-    return {'message': res}
