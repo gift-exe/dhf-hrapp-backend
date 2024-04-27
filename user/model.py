@@ -16,7 +16,8 @@ class User(Base):
     role = Column(String) #STAFF, HOS, ADMIN, HR
     
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="[Message.sender_id]")
-    received_messages = relationship("Message", back_populates="recipient", foreign_keys="[Message.recipient_id]")
+    received_messages = relationship("Message", back_populates="users", secondary="message_recipients")
+
     comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]")
 
 
