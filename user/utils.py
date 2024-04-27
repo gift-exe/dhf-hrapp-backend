@@ -25,7 +25,9 @@ def create_user(db: Session, user: schema.CreateUser):
 
 def get_user_by_email(db: Session, email: str):
     try:
-        return db.query(model.User).filter(model.User.email == email).first()
+        db_user = db.query(model.User).filter(model.User.email == email).first()
+        print(db_user)
+        return db_user
     except Exception as e:
         raise e
 

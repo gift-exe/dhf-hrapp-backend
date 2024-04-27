@@ -26,5 +26,7 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     text = Column(String, nullable=False)
     message_id = Column(Integer, ForeignKey("messages.id"))
+    sender_id = Column(Integer, ForeignKey("users.id"))
 
     message = relationship("Message", back_populates="comments", foreign_keys=[message_id])
+    sender = relationship("User", back_populates="comments", foreign_keys=[sender_id])
