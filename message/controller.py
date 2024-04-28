@@ -9,7 +9,7 @@ import json
 from helpers.upload_helper import do_upload
 
 from fastapi import Form, UploadFile
-from typing import Annotated
+from typing import Annotated, List
 
 router = APIRouter()
 
@@ -26,7 +26,7 @@ def get_db():
 async def upload_document(document: UploadFile, 
                           title: Annotated[str, Form()], 
                           label: Annotated[str, Form()],
-                          recipient: Annotated[str, Form()],
+                          recipients: Annotated[List[str], Form()],
                           text: Annotated[str, Form()]=None,
                           db: Session = Depends(get_db), 
                           current_user_id = Depends(security.get_current_user)
@@ -42,7 +42,6 @@ async def upload_document(document: UploadFile,
 
         #store details in db
         message_data = {'sender_id':user.id,
-                        'recipient_id':user_utils.get_user_by_email(email=recipient, db=db).id,
                         'label':label,
                         'title':title,
                         'document':doc_url,
@@ -50,7 +49,8 @@ async def upload_document(document: UploadFile,
                         'type':'document_upload',
                         'status':'doc_upload'}
         message_schema = schema.CreateMessage(**message_data)
-        db_message = utils.create_message(message=message_schema, db=db)
+
+        db_message = utils.create_message(message=message_schema, recipients=recipients, db=db)
 
         #TODO: send notification to recipient ...
         return Response(status_code=200, content=json.dumps({'message':'Document sent successfully'}))
@@ -61,14 +61,13 @@ async def upload_document(document: UploadFile,
 @router.post('/request-leave/')
 async def request_leave(title: Annotated[str, Form()], 
                         label: Annotated[str, Form()],
-                        recipient: Annotated[str, Form()],
+                        recipients: Annotated[List[str], Form()],
                         text: Annotated[str, Form()]=None, 
                         document: UploadFile = None, 
                         db: Session = Depends(get_db), 
                         current_user_id = Depends(security.get_current_user)):
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
-        
         
         if text is None:
             raise HTTPException(status_code=400, detail=json.dumps({'message':'No request leave letter'}))
@@ -81,7 +80,6 @@ async def request_leave(title: Annotated[str, Form()],
         
         #store details in db
         message_data = {'sender_id':user.id,
-                        'recipient_id':user_utils.get_user_by_email(db=db, email=recipient).id,
                         'label':label,
                         'title':title,
                         'document':doc_url,
@@ -90,7 +88,7 @@ async def request_leave(title: Annotated[str, Form()],
                         'status':'pending'}
 
         message_schema = schema.CreateMessage(**message_data)
-        db_message = utils.create_message(db=db, message=message_schema)
+        db_message = utils.create_message(message=message_schema, recipients=recipients, db=db)
 
         #TODO: send notification to recipient ...
         return Response(status_code=200, content=json.dumps({'message':'Message sent successfully'}))
@@ -156,7 +154,7 @@ async def respond_to_leave_request(leave_res: schema.LeaveResponse,
         if message.status != 'pending':
             raise HTTPException(status_code=400, detail=json.dumps({'message':'Leave request is not pending'}))
         
-        if message.recipient_id != user.id:
+        if user not in message.recipients:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Not the recipient of the request'}))
         
         if (leave_res.status == 'approve') or (leave_res.status == 'disapprove') or (leave_res.status == 'approve-without-pay'):
@@ -173,4 +171,4 @@ async def respond_to_leave_request(leave_res: schema.LeaveResponse,
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
-#broad cast message
+#TODO: broad cast message

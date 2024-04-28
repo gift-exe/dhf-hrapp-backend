@@ -1,7 +1,7 @@
 from sqlalchemy import String, Column, DateTime, func, BigInteger
 from sqlalchemy.orm import relationship
 from config.database import Base
-from message.model import MessageReciepts
+from message.model import message_recipients_association
 
 class User(Base):
     __tablename__ = 'users'
@@ -17,7 +17,7 @@ class User(Base):
     role = Column(String) #STAFF, HOS, ADMIN, HR
     
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="[Message.sender_id]")
-    #received_messages = relationship("Message", back_populates="users", secondary=MessageReciepts.__table__)
+    received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association)
 
     comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]")
 

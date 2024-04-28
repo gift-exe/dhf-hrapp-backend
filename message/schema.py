@@ -13,7 +13,6 @@ class CreateComment(BaseModel):
 
 class CreateMessage(BaseModel):
     sender_id: int
-    recipient_id: int
     label: str
     title: str
     text: Optional[str] = None
@@ -24,7 +23,7 @@ class CreateMessage(BaseModel):
 class ReturnMessage(BaseModel):
     message_id: int
     sender: str
-    recipient: str
+    recipients: List[str]
     label: str
     title: str
     text: Optional[str] = None
@@ -34,10 +33,11 @@ class ReturnMessage(BaseModel):
 
     @classmethod
     def to_dict(cls, msg:MMessage, comments:MComment, db:Session) -> "ReturnMessage":
+        recipients = [f'{r.first_name} {r.last_name}' for r in msg.recipients]
         return cls (
             message_id=msg.id, 
             sender=f"{user_utils.get_user(db=db, user_id=msg.sender_id).first_name} {user_utils.get_user(db=db, user_id=msg.sender_id).last_name}", 
-            recipient=f"{user_utils.get_user(db=db, user_id=msg.recipient_id).first_name} {user_utils.get_user(db=db, user_id=msg.recipient_id).last_name}",
+            recipients=recipients,
             label=msg.label,
             title=msg.title,
             text=msg.text,

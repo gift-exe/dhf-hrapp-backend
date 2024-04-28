@@ -1,17 +1,21 @@
 from sqlalchemy.orm import Session
 from message import model
 from message import schema
+from typing import List
+from user import utils as user_utils
 
-def create_message(db: Session, message: schema.CreateMessage):
+def create_message(db: Session, recipients:List[str], message: schema.CreateMessage):
     try:
         result = model.Message(sender_id=message.sender_id, 
-                            recipient_id=message.recipient_id, 
                             label=message.label, 
                             title=message.title, 
                             text=message.text, 
                             document=message.document, 
                             type=message.type,
                             status=message.status)
+        
+        for recipient in recipients:
+            result.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
         db.add(result)
         db.commit()
         db.refresh(result)
