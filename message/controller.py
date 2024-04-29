@@ -21,7 +21,6 @@ def get_db():
     finally:
         db.close()
 
-
 @router.post('/upload-document/')
 async def upload_document(document: UploadFile, 
                           title: Annotated[str, Form()], 
@@ -171,4 +170,19 @@ async def respond_to_leave_request(leave_res: schema.LeaveResponse,
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
-#TODO: broad cast message
+@router.get('/view-all-leave-requests')
+async def view_all_leave_requests(db: Session = Depends(get_db), 
+                                  current_user_id = Depends(security.get_current_user)):
+    try:
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+
+        if user.role != 'hr':
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr'}))
+            
+        leave_requests = utils.get_leave_requests(db=db)
+        return_messsages = [schema.ReturnMessage.to_dict(msg=msg, comments=msg.comments, db=db).model_dump() for msg in leave_requests]
+
+        return Response(status_code=200, content=json.dumps(return_messsages))
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))

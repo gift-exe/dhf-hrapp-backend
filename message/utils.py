@@ -41,3 +41,10 @@ def create_comment(db: Session, comment: schema.CreateComment, sender_id):
         return result
     except Exception as e:
         raise e
+    
+def get_leave_requests(db: Session):
+    try:
+        leave_requests = db.query(model.Message).filter(model.Message.type == 'request_leave')
+        return leave_requests
+    except Exception as e:
+        raise e

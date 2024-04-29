@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from user.model import User as MUser
+from datetime import time
 
 class BaseUser(BaseModel):
     first_name: str
@@ -8,6 +9,8 @@ class BaseUser(BaseModel):
     email: str
     phone: str
     role: str
+    resumption_time: Optional[str|time] = None
+    closing_time: Optional[str|time] = None
 
     class Config:
         from_attributes = True
@@ -19,7 +22,9 @@ class BaseUser(BaseModel):
             last_name = db_item.last_name,
             email = db_item.email,
             phone = db_item.phone,
-            role = db_item.role
+            role = db_item.role,
+            resumption_time = db_item.resumption_time.isoformat(),
+            closing_time = db_item.closing_time.isoformat()
         )
 
 class CreateUser(BaseUser):
@@ -36,7 +41,9 @@ class User(BaseUser):
             last_name = db_item.last_name,
             email = db_item.email,
             phone = db_item.phone,
-            role = db_item.role
+            role = db_item.role,
+            resumption_time = db_item.resumption_time.isoformat(),
+            closing_time = db_item.closing_time.isoformat()
         )
     
 class TokenData(BaseModel):
@@ -49,3 +56,8 @@ class Login(BaseModel):
 class PasswordChange(BaseModel):
     old_password: str
     new_password: str
+
+class WorkPeriod(BaseModel):
+    user_id: int
+    start_time: str
+    end_time: str
