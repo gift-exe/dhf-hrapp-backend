@@ -44,7 +44,7 @@ pip install -r requirements.txt
 Create a .env file in the home directory mocking the .env.example file
 
 Alembic Stuff:  
-ps: Alembic is like magic to me... But try running thies commands. It should work
+Alembic is like magic to me... But try running these commands. It should work
 
 ```
 alembic init migrations
