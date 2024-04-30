@@ -3,10 +3,11 @@ Backend API for HR App
 
 # Steps to run locally
 
-##### Requiremts (LOL)
+##### Requirements (LOL)
 - A computer
 - Internet
-- Python 
+- Python
+- PostgreDB
 
 #### Setup
 Clone the repository:
