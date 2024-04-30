@@ -161,4 +161,5 @@ cython_debug/
 
 /alembic.ini
 alembic.ini
-/migrations/
+/migrations/versions/
+migrations/versions/
