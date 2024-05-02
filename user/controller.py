@@ -22,7 +22,7 @@ async def signup(user: schema.CreateUser, db: Session = Depends(get_db), current
     try:
         current_user = utils.get_user(db=db, user_id=current_user_id.id)
         
-        if (current_user.role == 'admin') or (current_user.role == 'hr'):
+        if (current_user.role.name == 'admin') or (current_user.role.name == 'hr'):
 
             if utils.get_user_by_email(email=user.email, db=db) is not None:
                 raise HTTPException(status_code=400, detail="email already registered")
@@ -78,7 +78,7 @@ async def set_working_period(work_period: schema.WorkPeriod,
     try:
         current_user = utils.get_user(db=db, user_id=current_user_id.id)
         
-        if (current_user.role == 'admin') or (current_user.role == 'hr'):
+        if (current_user.role.name == 'admin') or (current_user.role.name == 'hr'):
             user = utils.get_user(db=db, user_id=work_period.user_id)
             start_time = work_period.start_time
             end_time = work_period.end_time

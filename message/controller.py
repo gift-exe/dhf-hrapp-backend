@@ -147,7 +147,7 @@ async def respond_to_leave_request(leave_res: schema.LeaveResponse,
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
         message = utils.get_message(db=db, message_id=leave_res.message_id)
 
-        if user.role != 'admin':
+        if user.role.name != 'admin':
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized to respond to leave. Must be an admin'}))
         
         if message.status != 'pending':
@@ -176,7 +176,7 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
 
-        if user.role != 'hr':
+        if user.role.name != 'hr':
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr'}))
             
         leave_requests = utils.get_leave_requests(db=db)

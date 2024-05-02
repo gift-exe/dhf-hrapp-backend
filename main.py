@@ -3,11 +3,13 @@ from config.database import Base, engine
 import user.model
 from user.controller import router as user_router
 from message.controller import  router as message_router
+from office.controller import router as office_router
 
 app = FastAPI()
 
 app.include_router(user_router, prefix='/user')
 app.include_router(message_router, prefix='/messages')
+app.include_router(office_router, prefix='/offices')
 
 Base.metadata.create_all(bind=engine)
 

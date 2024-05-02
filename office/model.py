@@ -17,10 +17,15 @@ class Office(Base):
 
 class OfficeHead(Base):
     __tablename__ = 'office_heads'
+    
+    id = Column(BigInteger, primary_key=True)
 
-    office_id = Column(BigInteger, ForeignKey('offices.id'), primary_key=True)
+    office_id = Column(BigInteger, ForeignKey('offices.id'), unique=True, nullable=False)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    
     office = relationship('Office', backref='head')
     user = relationship('User', backref='department_head')
+    
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())
+
