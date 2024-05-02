@@ -12,6 +12,7 @@ load_dotenv()
 
 from user.model import User
 from message.model import Message, Comment, message_recipients_association
+from office.model import Office, OfficeHead
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
