@@ -22,11 +22,6 @@ def get_db():
 async def generate_report(report_request: schema.RequestReport,
                            db: Session = Depends(get_db), 
                            current_user_id = Depends(security.get_current_user)):
-    #leave of absence
-    #informed late arrival
-    #early closure
-    #movement
-    #TODO: Add timeline filter
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
 
@@ -50,7 +45,5 @@ async def generate_report(report_request: schema.RequestReport,
         else:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized to view report. Must be hr or admin'}))
 
-    #so the logic is going to be simple. all we would do is 
-    #get all the messages with this person_id as the sender id
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
