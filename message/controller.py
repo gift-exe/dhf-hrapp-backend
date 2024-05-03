@@ -186,3 +186,32 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+    
+# share leave request with next office (head of section)
+@router.post('/share-leave-request')
+async def share_leave_request_with_next_office(
+    share_leave_request: schema.ShareLeaveRequest,
+    db: Session = Depends(get_db), 
+    current_user_id = Depends(security.get_current_user)):
+    #assuming that the leave request would be forwarded to an admin or all the admin
+    #try:
+
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+
+        if user.role.name != 'hos':
+            raise HTTPException(status_code=401, detail="Not authorized to share leave request. must be head of section")
+        print(share_leave_request.message_id)
+        db_message = utils.get_message(db=db, message_id=share_leave_request.message_id)
+        
+        for recipient in share_leave_request.recipients:
+            db_message.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
+        
+        db.commit()
+        db.refresh(db_message)
+
+        #TODO: send notification to recipient ...
+        return Response(status_code=200, content=json.dumps({'message':'Message shared successfully'}))
+
+    #except Exception as e:
+    #    raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+

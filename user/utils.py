@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from user import model
 from user import schema
 from config import security
+from office import utils as office_utils
 
 
 def get_user(db: Session, user_id):
@@ -14,18 +15,18 @@ def get_user(db: Session, user_id):
 def create_user(db: Session, user: schema.CreateUser):
     try:
         hash_password = security.hash_string(user.password)
-
         result = model.User(first_name = user.first_name, 
                             last_name = user.last_name, 
                             email = user.email, 
                             password = hash_password, 
                             phone = user.phone, 
-                            role=user.role,
+                            role_id=office_utils.get_office_by_name(db=db, name=user.role).id,
                             resumption_time=user.resumption_time,
                             closing_time=user.closing_time)
         db.add(result)
         db.commit()
         db.refresh(result)
+        
         return result
     except Exception as e:
         raise e

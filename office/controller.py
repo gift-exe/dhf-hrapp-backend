@@ -39,9 +39,6 @@ async def register_office(
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
-
-
-
 @router.post('/assign-hofo/')
 async def assign_hofo(
     assign_hofo: schema.CreateHofoO,
@@ -68,5 +65,3 @@ async def assign_hofo(
             raise HTTPException(status_code=401, detail="Not authorized to assign head of office. must be an admin or hr staff")
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
-    
-# share leave request with next office (head of section)

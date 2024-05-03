@@ -12,16 +12,16 @@ class Office(BaseModel):
 
 class GetOffice(Office):
     id: int
-    created_at: datetime
-    last_update: datetime
+    created_at: str
+    last_update: str
 
     @classmethod
     def to_dict(cls, db_item: MOffice) -> "Office":
         return cls(
             id = db_item.id,
             name = db_item.name,
-            created_at = db_item.created_at,
-            last_update = db_item.updated_at
+            created_at = db_item.created_at.isoformat(),
+            last_update = db_item.updated_at.isoformat()
         )
 
 class CreateHofoO(BaseModel):
@@ -31,16 +31,16 @@ class CreateHofoO(BaseModel):
 class GetHofO(BaseModel):
     office_name: str
     head_email: str
-    created_at: datetime
-    last_update: datetime
+    created_at: str
+    last_update: str
 
     @classmethod
     def to_dict(cls, db_item: MOfficeHead) -> "Office":
         return cls(
             office_name = db_item.office.name,
-            head_email = db_item.user.name,
-            created_at = db_item.created_at,
-            last_update = db_item.updated_at
+            head_email = db_item.user.email,
+            created_at = db_item.created_at.isoformat(),
+            last_update = db_item.updated_at.isoformat()
         )
 
 

@@ -22,7 +22,7 @@ def create_office(db: Session, office: schema.Office):
 
 def assign_hofo(db: Session, assignhofo: schema.CreateHofoO):
     try:
-        result = model.OfficeHead(office_id=get_office_by_name(db=db, name=assignhofo.name).id,
+        result = model.OfficeHead(office_id=get_office_by_name(db=db, name=assignhofo.office_name).id,
                                   user_id=user_utils.get_user_by_email(db=db, email=assignhofo.email).id)
         db.add(result)
         db.commit()

@@ -51,3 +51,7 @@ class ReturnMessage(BaseModel):
 class LeaveResponse(BaseModel):
     message_id: int
     status: str
+
+class ShareLeaveRequest(BaseModel):
+    message_id: int
+    recipients: List[str]

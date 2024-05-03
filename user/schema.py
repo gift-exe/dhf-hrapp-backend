@@ -22,9 +22,9 @@ class BaseUser(BaseModel):
             last_name = db_item.last_name,
             email = db_item.email,
             phone = db_item.phone,
-            role = db_item.role,
-            resumption_time = db_item.resumption_time.isoformat(),
-            closing_time = db_item.closing_time.isoformat()
+            role = db_item.role.name,
+            resumption_time = db_item.resumption_time.isoformat() if db_item.resumption_time is not None else None,
+            closing_time = db_item.closing_time.isoformat() if db_item.closing_time is not None else None
         )
 
 class CreateUser(BaseUser):
@@ -41,9 +41,9 @@ class User(BaseUser):
             last_name = db_item.last_name,
             email = db_item.email,
             phone = db_item.phone,
-            role = db_item.role,
-            resumption_time = db_item.resumption_time.isoformat(),
-            closing_time = db_item.closing_time.isoformat()
+            role = db_item.role.name,
+            resumption_time = db_item.resumption_time.isoformat() if db_item.resumption_time is not None else None,
+            closing_time = db_item.closing_time.isoformat() if db_item.closing_time is not None else None
         )
     
 class TokenData(BaseModel):

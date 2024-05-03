@@ -20,5 +20,5 @@ class User(Base):
     
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="[Message.sender_id]")
     received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association)
-    role = relationship("Office", back_populates="staffs")
+    role = relationship("Office", back_populates="staff")
     comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]")
