@@ -15,7 +15,8 @@ def create_message(db: Session, recipients:List[str], message: schema.CreateMess
                             status=message.status)
         
         for recipient in recipients:
-            result.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
+            user = user_utils.get_user_by_email(email=recipient, db=db)
+            result.recipients.append(user)
         db.add(result)
         db.commit()
         db.refresh(result)

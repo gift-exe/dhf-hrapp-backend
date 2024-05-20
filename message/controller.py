@@ -49,7 +49,7 @@ async def upload_document(document: UploadFile,
                         'status':'doc_upload'}
         message_schema = schema.CreateMessage(**message_data)
 
-        db_message = utils.create_message(message=message_schema, recipients=recipients, db=db)
+        db_message = utils.create_message(message=message_schema, recipients=recipients[0].split(','), db=db)
 
         #TODO: send notification to recipient ...
         return Response(status_code=200, content=json.dumps({'message':'Document sent successfully'}))
