@@ -49,3 +49,10 @@ def change_password(db: Session, password: str, id):
         return True
     except Exception as e:
         raise e
+
+def get_users(db: Session, user_id):
+    try:
+        users = db.query(model.User).filter(model.User.id != user_id).all()
+        return users
+    except Exception as e:
+        raise e

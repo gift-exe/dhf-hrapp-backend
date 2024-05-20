@@ -61,3 +61,20 @@ class WorkPeriod(BaseModel):
     user_id: int
     start_time: str
     end_time: str
+
+class GetUsers(BaseModel):
+    user_id: int
+    first_name: str
+    last_name: str
+    email: str
+    role: str
+
+    @classmethod
+    def to_dict(cls, user):
+        return cls(
+            user_id = user.id,
+            first_name = user.first_name,
+            last_name = user.last_name,
+            email = user.email,
+            role = user.role.name
+        )

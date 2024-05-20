@@ -96,3 +96,14 @@ async def set_working_period(work_period: schema.WorkPeriod,
             raise HTTPException(status_code=401, detail="Not authorized to define working hours. must be an admin or hr staff")
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+
+@router.get('/get-users')
+async def get_users(db: Session = Depends(get_db),
+                    current_user_id = Depends(security.get_current_user)):
+    try:        
+        db_users = utils.get_users(db=db, user_id=current_user_id.id)
+        users = [schema.GetUsers.to_dict(user=user).model_dump() for user in db_users]
+        
+        return Response(status_code=200, content=json.dumps(users))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
