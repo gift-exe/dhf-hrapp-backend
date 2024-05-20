@@ -111,7 +111,6 @@ def get_all_evaluations(db: Session):
     except Exception as e:
         raise e
 
-
 def create_early_closure(db: Session, early_closure_data: schema.EarlyClosureCreate, sender:int):
     try:
         ecd = early_closure_data.model_dump()
@@ -168,7 +167,6 @@ def update_early_closure_director_response(db: Session, early_closure_id: int, r
             raise ValueError("Early closure not found")
     except Exception as e:
         raise e
-
 
 def create_study_leave(db: Session, study_leave_data: schema.StudyLeaveApplicant, sender: int):
     try:

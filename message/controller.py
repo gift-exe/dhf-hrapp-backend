@@ -142,6 +142,7 @@ async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
 
+        #messages
         messages = user.received_messages
         return_messsages = [schema.ReturnMessage.to_dict(msg=msg, comments=msg.comments, db=db).model_dump() for msg in messages]
 
@@ -157,8 +158,6 @@ async def comment(comment: schema.CreateComment,
     
     try:
         user = user_utils.get_user(user_id=current_user_id.id, db=db)
-
-        message = utils.get_message(db=db, message_id=comment.message_id)
         
         db_comment = utils.create_comment(db=db, comment=comment, sender_id=user.id)
 
