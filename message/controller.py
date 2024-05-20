@@ -57,43 +57,6 @@ async def upload_document(document: UploadFile,
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
-@router.post('/request-leave/')
-async def request_leave(title: Annotated[str, Form()], 
-                        label: Annotated[str, Form()],
-                        recipients: Annotated[List[str], Form()],
-                        text: Annotated[str, Form()]=None, 
-                        document: UploadFile = None, 
-                        db: Session = Depends(get_db), 
-                        current_user_id = Depends(security.get_current_user)):
-    try:
-        user = user_utils.get_user(db=db, user_id=current_user_id.id)
-        
-        if text is None:
-            raise HTTPException(status_code=400, detail=json.dumps({'message':'No request leave letter'}))
-
-        #upload document first
-        if document is not None:
-            doc_url = do_upload(document, user.email)
-        else:
-            doc_url = None
-        
-        #store details in db
-        message_data = {'sender_id':user.id,
-                        'label':label,
-                        'title':title,
-                        'document':doc_url,
-                        'text':text,
-                        'type':'request_leave',
-                        'status':'pending'}
-
-        message_schema = schema.CreateMessage(**message_data)
-        db_message = utils.create_message(message=message_schema, recipients=recipients, db=db)
-
-        #TODO: send notification to recipient ...
-        return Response(status_code=200, content=json.dumps({'message':'Message sent successfully'}))
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
 @router.get('/outbox/')
 async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(security.get_current_user)):
