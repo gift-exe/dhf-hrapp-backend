@@ -70,20 +70,36 @@ async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(
         early_closures = user.sent_early_closures
         return_early_closures = []
         for ec in early_closures:
+            cmts = ec.comments
             ec = ec.__dict__
             del ec['_sa_instance_state']
             ec['created_at'] = ec['created_at'].isoformat()
             ec['updated_at'] = ec['updated_at'].isoformat()
+            ec['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['evaluation_id'], c['message_id'], c['study_leave_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                ec['comments'].append(c)
             return_early_closures.append(ec)
 
         #study leaves
         study_leaves = user.sent_study_leaves
         return_study_leaves = []
         for sl in study_leaves:
+            cmts = sl.comments
             sl = sl.__dict__
             del sl['_sa_instance_state']
             sl['created_at'] = sl['created_at'].isoformat()
             sl['updated_at'] = sl['updated_at'].isoformat()
+            sl['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['evaluation_id'], c['message_id'], c['early_closure_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                sl['comments'].append(c)
             return_study_leaves.append(sl)
 
         #evaluations
@@ -95,11 +111,19 @@ async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(
             del grade['created_at']
             del grade['updated_at']
 
+            cmts = e.comments
             e = e.__dict__
             del e['_sa_instance_state']
             e['created_at'] = e['created_at'].isoformat()
             e['updated_at'] = e['updated_at'].isoformat()
             e['grade'] = grade
+            e['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['study_leave_id'], c['message_id'], c['early_closure_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                e['comments'].append(c)
             return_evaluations.append(e)
         
         return_dict = {
@@ -179,6 +203,7 @@ async def get_evaluations(
         return_evaluations = list()
 
         for eval in evaluations:
+            cmts = eval.comments
             grade = eval.grade.__dict__
             del grade['_sa_instance_state']
             del grade['created_at']
@@ -189,6 +214,15 @@ async def get_evaluations(
             eval_dict['created_at'] = eval_dict['created_at'].isoformat()
             eval_dict['updated_at'] = eval_dict['updated_at'].isoformat()
             eval_dict['grade'] = grade
+            eval_dict['comments'] = []
+            
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['early_closure_id'], c['message_id'], c['study_leave_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                eval_dict['comments'].append(c)
+
             return_evaluations.append(eval_dict)
         
         return Response(status_code=200, content=json.dumps(return_evaluations))
@@ -295,10 +329,19 @@ async def get_all_early_closures(
         return_messsages = []
 
         for lr in early_closures:
+            cmts = lr.comments
             lr = lr.__dict__
             del lr['_sa_instance_state']
             lr['created_at'] = lr['created_at'].isoformat()
             lr['updated_at'] = lr['updated_at'].isoformat()
+            lr['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['evaluation_id'], c['message_id'], c['study_leave_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                lr['comments'].append(c)
+            
             return_messsages.append(lr)
 
         return Response(status_code=200, content=json.dumps(return_messsages))
@@ -426,10 +469,18 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
         return_messsages = []
 
         for lr in leave_requests:
+            cmts = lr.comments
             lr = lr.__dict__
             del lr['_sa_instance_state']
             lr['created_at'] = lr['created_at'].isoformat()
             lr['updated_at'] = lr['updated_at'].isoformat()
+            lr['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['evaluation_id'], c['message_id'], c['early_closure_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                lr['comments'].append(c)
             return_messsages.append(lr)
 
         return Response(status_code=200, content=json.dumps(return_messsages))

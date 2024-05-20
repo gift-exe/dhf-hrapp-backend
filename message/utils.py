@@ -42,12 +42,12 @@ def create_comment(db: Session, comment: schema.CreateComment, sender_id):
                                 type=comment.type)
         elif comment.type == 'study_leave':
             result = model.Comment(text=comment.text,
-                                study_leade_id=comment.message_id,
+                                study_leave_id=comment.message_id,
                                 sender_id=sender_id,
                                 type=comment.type)
-        elif comment.type == 'evaluation':
+        elif comment.type == 'early closure':
             result = model.Comment(text=comment.text,
-                                study_leave_id=comment.message_id,
+                                early_closure_id=comment.message_id,
                                 sender_id=sender_id,
                                 type=comment.type)
         elif comment.type == 'evaluation':
