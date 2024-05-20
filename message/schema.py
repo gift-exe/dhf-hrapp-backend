@@ -9,6 +9,7 @@ from datetime import datetime
 class CreateComment(BaseModel):
     text: str
     message_id: int
+    type: str
 
 
 class CreateMessage(BaseModel):

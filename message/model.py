@@ -10,7 +10,6 @@ message_recipients_association = Table(
     Column('recipient_id', Integer, ForeignKey('users.id')),
     Column('created_at', DateTime, nullable=False, default=func.now()),
     Column('updated_at', DateTime, nullable=False, default=func.now()),
-
 )
 class Message(Base):
     __tablename__ = 'messages'
@@ -32,18 +31,28 @@ class Message(Base):
     comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
 
 class Comment(Base):
+    #whaky hack lmao
     __tablename__ = 'comments'
 
     id = Column(Integer, primary_key=True)
     text = Column(String, nullable=False)
+    
     message_id = Column(Integer, ForeignKey("messages.id"))
+    evaluation_id = Column(Integer, ForeignKey("evaluations.id"))
+    early_closure_id = Column(Integer, ForeignKey("early-closures.id"))
+    study_leave_id = Column(Integer, ForeignKey("study-leave.id"))
+    type = Column(String, nullable=False, default='message')
+    
     sender_id = Column(Integer, ForeignKey("users.id"))
+
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
     message = relationship("Message", back_populates="comments", foreign_keys=[message_id])
+    evaluation = relationship("Evaluation", back_populates="comments", foreign_keys=[evaluation_id])
+    early_closure = relationship("EarlyClosure", back_populates="comments", foreign_keys=[early_closure_id])
+    study_leave = relationship("StudyLeave", back_populates="comments", foreign_keys=[study_leave_id])
     sender = relationship("User", back_populates="comments", foreign_keys=[sender_id])
-
 
 class Evaluation(Base):
     __tablename__ = 'evaluations'
@@ -73,6 +82,10 @@ class Evaluation(Base):
 
     #grades
     grade = relationship('Grade', uselist=False, back_populates='evaluation')
+
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender = relationship("User", back_populates="sent_evaluations", foreign_keys=[sender_id])
+    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
 
 class Grade(Base):
     __tablename__ = 'grades'
@@ -116,7 +129,6 @@ class Grade(Base):
     evaluation_id = Column(Integer, ForeignKey('evaluations.id'))
     evaluation = relationship('Evaluation', back_populates='grade')
 
-
 class EarlyClosure(Base):
     __tablename__ = 'early-closures'
 
@@ -150,6 +162,10 @@ class EarlyClosure(Base):
     hro_signature = Column(String, nullable=False, default='no response')
     director_signature = Column(String, nullable=False, default='no response')
     school_stamp = Column(String, nullable=False, default='no response')
+
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender = relationship("User", back_populates="sent_early_closures", foreign_keys=[sender_id])
+    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
 
 class StudyLeave(Base):
     __tablename__ = 'study-leave'
@@ -220,3 +236,7 @@ class StudyLeave(Base):
     accountant_signature = Column(String, nullable=False, default='no response')
     hr_signature = Column(String, nullable=False, default='no response')
     director_signature = Column(String, nullable=False, default='no response')
+
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender = relationship("User", back_populates="sent_study_leaves", foreign_keys=[sender_id])
+    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")

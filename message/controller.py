@@ -57,16 +57,59 @@ async def upload_document(document: UploadFile,
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
-
 @router.get('/outbox/')
 async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(security.get_current_user)):
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
 
+        #messages
         messages = user.sent_messages
         return_messsages = [schema.ReturnMessage.to_dict(msg=msg, comments=msg.comments, db=db).model_dump() for msg in messages]
 
-        return Response(status_code=200, content=json.dumps(return_messsages))
+        #early closures
+        early_closures = user.sent_early_closures
+        return_early_closures = []
+        for ec in early_closures:
+            ec = ec.__dict__
+            del ec['_sa_instance_state']
+            ec['created_at'] = ec['created_at'].isoformat()
+            ec['updated_at'] = ec['updated_at'].isoformat()
+            return_early_closures.append(ec)
+
+        #study leaves
+        study_leaves = user.sent_study_leaves
+        return_study_leaves = []
+        for sl in study_leaves:
+            sl = sl.__dict__
+            del sl['_sa_instance_state']
+            sl['created_at'] = sl['created_at'].isoformat()
+            sl['updated_at'] = sl['updated_at'].isoformat()
+            return_study_leaves.append(sl)
+
+        #evaluations
+        evaluations = user.sent_evaluations
+        return_evaluations = []
+        for e in evaluations:
+            grade = e.grade.__dict__
+            del grade['_sa_instance_state']
+            del grade['created_at']
+            del grade['updated_at']
+
+            e = e.__dict__
+            del e['_sa_instance_state']
+            e['created_at'] = e['created_at'].isoformat()
+            e['updated_at'] = e['updated_at'].isoformat()
+            e['grade'] = grade
+            return_evaluations.append(e)
+        
+        return_dict = {
+            'messages':return_messsages,
+            'study_leaves':return_study_leaves,
+            'early_closures':return_early_closures,
+            'evaluations': return_evaluations
+        }
+
+        return Response(status_code=200, content=json.dumps(return_dict))
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
@@ -101,83 +144,6 @@ async def comment(comment: schema.CreateComment,
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
     
 
-#status update on leave request
-@router.put('/respond-to-leave-request')
-async def respond_to_leave_request(leave_res: schema.LeaveResponse,
-                                   db: Session = Depends(get_db), 
-                                   current_user_id = Depends(security.get_current_user)):
-    try:
-        user = user_utils.get_user(db=db, user_id=current_user_id.id)
-        message = utils.get_message(db=db, message_id=leave_res.message_id)
-
-        if user.role.name != 'admin':
-            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized to respond to leave. Must be an admin'}))
-        
-        if message.status != 'pending':
-            raise HTTPException(status_code=400, detail=json.dumps({'message':'Leave request is not pending'}))
-        
-        if user not in message.recipients:
-            raise HTTPException(status_code=401, detail=json.dumps({'message':'Not the recipient of the request'}))
-        
-        if (leave_res.status == 'approve') or (leave_res.status == 'disapprove') or (leave_res.status == 'approve-without-pay'):
-            message.status = leave_res.status
-            db.commit()
-            db.refresh(message)
-
-            #TODO: send notification to request sender
-
-            return Response(status_code=200, content=json.dumps(schema.ReturnMessage.to_dict(msg=message, comments=message.comments, db=db).model_dump()))
-        else:
-            raise HTTPException(status_code=401, detail=json.dumps({'message':'Invalid status response'}))
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
-
-@router.get('/view-all-leave-requests')
-async def view_all_leave_requests(db: Session = Depends(get_db), 
-                                  current_user_id = Depends(security.get_current_user)):
-    try:
-        user = user_utils.get_user(db=db, user_id=current_user_id.id)
-
-        if user.role.name != 'hr':
-            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr'}))
-            
-        leave_requests = utils.get_leave_requests(db=db)
-        return_messsages = [schema.ReturnMessage.to_dict(msg=msg, comments=msg.comments, db=db).model_dump() for msg in leave_requests]
-
-        return Response(status_code=200, content=json.dumps(return_messsages))
-    
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
-    
-# share leave request with next office (head of section)
-@router.post('/share-leave-request')
-async def share_leave_request_with_next_office(
-    share_leave_request: schema.ShareLeaveRequest,
-    db: Session = Depends(get_db), 
-    current_user_id = Depends(security.get_current_user)):
-    #assuming that the leave request would be forwarded to an admin or all the admin
-    try:
-
-        user = user_utils.get_user(db=db, user_id=current_user_id.id)
-
-        if user.role.name != 'hos':
-            raise HTTPException(status_code=401, detail="Not authorized to share leave request. must be head of section")
-        
-        db_message = utils.get_message(db=db, message_id=share_leave_request.message_id)
-        
-        for recipient in share_leave_request.recipients:
-            db_message.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
-        
-        db.commit()
-        db.refresh(db_message)
-
-        #TODO: send notification to recipient ...
-        return Response(status_code=200, content=json.dumps({'message':'Message shared successfully'}))
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
-
 # EVALUATION
 
 @router.post('/perform-evaluation')
@@ -191,7 +157,7 @@ async def perform_evaluation(
         if user.role.name != 'hos':
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be head of section'}))
         
-        db_evaluation = utils.create_evaluation_with_grade(db=db, evaluation=evaluation)       
+        db_evaluation = utils.create_evaluation_with_grade(db=db, evaluation=evaluation, sender=user.id)       
 
         #TODO: send notification to admin and hr ...
         return Response(status_code=200, content=json.dumps({'message':'Evaluation Submitted Successfully'}))
@@ -244,14 +210,13 @@ async def submit_early_closure(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be a teacher'}))
 
         # Create Early Closure record in the database
-        db_early_closure = utils.create_early_closure(db=db, early_closure_data=early_closure_data)
+        db_early_closure = utils.create_early_closure(db=db, early_closure_data=early_closure_data, sender=user.id)
 
         # TODO: Send notification to HOS
         return Response(status_code=200, content=json.dumps({'message':'Early Closure Submitted Successfully'}))
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
-
 
 @router.put('/respond-early-closure/{early_closure_id}/hos')
 async def respond_early_closure_hos(
@@ -274,7 +239,6 @@ async def respond_early_closure_hos(
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
 
-
 @router.put('/respond-early-closure/{early_closure_id}/hr')
 async def respond_early_closure_hr(
     early_closure_id: int,
@@ -295,7 +259,6 @@ async def respond_early_closure_hr(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
-
 
 @router.put('/respond-early-closure/{early_closure_id}/director')
 async def respond_early_closure_director(
@@ -318,6 +281,31 @@ async def respond_early_closure_director(
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
     
+@router.get('/early-closure')
+async def get_all_early_closures(
+    db: Session = Depends(get_db),
+    current_user_id = Depends(security.get_current_user)):
+    try:
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+
+        if user.role.name not in ['hr', 'admin']:
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr or admin'}))
+            
+        early_closures = utils.get_early_closures(db=db)
+        return_messsages = []
+
+        for lr in early_closures:
+            lr = lr.__dict__
+            del lr['_sa_instance_state']
+            lr['created_at'] = lr['created_at'].isoformat()
+            lr['updated_at'] = lr['updated_at'].isoformat()
+            return_messsages.append(lr)
+
+        return Response(status_code=200, content=json.dumps(return_messsages))
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+
 
 # STUDY LEAVE
 
@@ -333,14 +321,13 @@ async def submit_study_leave(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be a staff'}))
 
         # Create Study Leave record in the database
-        db_study_leave = utils.create_study_leave(db=db, study_leave_data=study_leave_data)
+        db_study_leave = utils.create_study_leave(db=db, study_leave_data=study_leave_data, sender=user.id)
 
         # TODO: Send notification to Head Teacher
         return Response(status_code=200, content=json.dumps({'message':'Study Leave Application Submitted Successfully'}))
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
-
 
 @router.put('/respond-study-leave/{study_leave_id}/hos')
 async def respond_study_leave_head_teacher(
@@ -363,7 +350,6 @@ async def respond_study_leave_head_teacher(
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
 
-
 @router.put('/respond-study-leave/{study_leave_id}/accountant')
 async def respond_study_leave_accountant(
     study_leave_id: int,
@@ -384,7 +370,6 @@ async def respond_study_leave_accountant(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
-
 
 @router.put('/respond-study-leave/{study_leave_id}/hr')
 async def respond_study_leave_hr(
@@ -407,7 +392,6 @@ async def respond_study_leave_hr(
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
 
-
 @router.put('/respond-study-leave/{study_leave_id}/director')
 async def respond_study_leave_director(
     study_leave_id: int,
@@ -428,3 +412,55 @@ async def respond_study_leave_director(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
+
+@router.get('/study-leaves')
+async def view_all_leave_requests(db: Session = Depends(get_db), 
+                                  current_user_id = Depends(security.get_current_user)):
+    try:
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+
+        if user.role.name not in ['hr', 'admin']:
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr or admin'}))
+            
+        leave_requests = utils.get_leave_requests(db=db)
+        return_messsages = []
+
+        for lr in leave_requests:
+            lr = lr.__dict__
+            del lr['_sa_instance_state']
+            lr['created_at'] = lr['created_at'].isoformat()
+            lr['updated_at'] = lr['updated_at'].isoformat()
+            return_messsages.append(lr)
+
+        return Response(status_code=200, content=json.dumps(return_messsages))
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+
+# share leave request with next office (head of section)
+@router.post('/share-leave-request')
+async def share_leave_request_with_next_office(
+    share_leave_request: schema.ShareLeaveRequest,
+    db: Session = Depends(get_db), 
+    current_user_id = Depends(security.get_current_user)):
+    #assuming that the leave request would be forwarded to an admin or all the admin
+    try:
+
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+
+        if user.role.name != 'hos':
+            raise HTTPException(status_code=401, detail="Not authorized to share leave request. must be head of section")
+        
+        db_message = utils.get_message(db=db, message_id=share_leave_request.message_id)
+        
+        for recipient in share_leave_request.recipients:
+            db_message.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
+        
+        db.commit()
+        db.refresh(db_message)
+
+        #TODO: send notification to recipient ...
+        return Response(status_code=200, content=json.dumps({'message':'Message shared successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))

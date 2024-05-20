@@ -22,3 +22,7 @@ class User(Base):
     received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association)
     role = relationship("Office", back_populates="staff")
     comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]")
+
+    sent_early_closures = relationship("EarlyClosure", back_populates="sender", foreign_keys="[EarlyClosure.sender_id]")
+    sent_study_leaves = relationship("StudyLeave", back_populates="sender", foreign_keys="[StudyLeave.sender_id]")
+    sent_evaluations = relationship("Evaluation", back_populates="sender", foreign_keys="[Evaluation.sender_id]")

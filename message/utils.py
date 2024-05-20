@@ -35,9 +35,30 @@ def get_message(db: Session, message_id):
 def create_comment(db: Session, comment: schema.CreateComment, sender_id):
     
     try:
-        result = model.Comment(text=comment.text,
-                               message_id=comment.message_id,
-                               sender_id=sender_id)
+        if comment.type == 'message':
+            result = model.Comment(text=comment.text,
+                                message_id=comment.message_id,
+                                sender_id=sender_id,
+                                type=comment.type)
+        elif comment.type == 'study_leave':
+            result = model.Comment(text=comment.text,
+                                study_leade_id=comment.message_id,
+                                sender_id=sender_id,
+                                type=comment.type)
+        elif comment.type == 'evaluation':
+            result = model.Comment(text=comment.text,
+                                study_leave_id=comment.message_id,
+                                sender_id=sender_id,
+                                type=comment.type)
+        elif comment.type == 'evaluation':
+            result = model.Comment(text=comment.text,
+                                evaluation_id=comment.message_id,
+                                sender_id=sender_id,
+                                type=comment.type)
+        else:
+            raise ValueError('message type not recognised valid types are: \
+                             "message", "evaluation", "study leave" or "early closure"')
+        
         db.add(result)
         db.commit()
         db.refresh(result)
@@ -48,15 +69,22 @@ def create_comment(db: Session, comment: schema.CreateComment, sender_id):
     
 def get_leave_requests(db: Session):
     try:
-        leave_requests = db.query(model.Message).filter(model.Message.type == 'request_leave')
+        leave_requests = db.query(model.StudyLeave).all()
         return leave_requests
     except Exception as e:
         raise e
     
-def create_evaluation_with_grade(db: Session, evaluation: schema.EvaluationCreate):
+def get_early_closures(db: Session):
+    try:
+        return db.query(model.EarlyClosure).all()
+    except Exception as e:
+        raise e
+    
+def create_evaluation_with_grade(db: Session, evaluation: schema.EvaluationCreate, sender:int):
     try:
         # Create Evaluation object
         eval = evaluation.model_dump()
+        eval['sender_id'] = sender
         grade_data_dict = eval.pop('grades')
 
         db_evaluation = model.Evaluation(**eval)
@@ -84,9 +112,11 @@ def get_all_evaluations(db: Session):
         raise e
 
 
-def create_early_closure(db: Session, early_closure_data: schema.EarlyClosureCreate):
+def create_early_closure(db: Session, early_closure_data: schema.EarlyClosureCreate, sender:int):
     try:
-        db_early_closure = model.EarlyClosure(**early_closure_data.model_dump())
+        ecd = early_closure_data.model_dump()
+        ecd['sender_id'] = sender
+        db_early_closure = model.EarlyClosure(**ecd)
         db.add(db_early_closure)
         db.commit()
         db.refresh(db_early_closure)
@@ -140,9 +170,11 @@ def update_early_closure_director_response(db: Session, early_closure_id: int, r
         raise e
 
 
-def create_study_leave(db: Session, study_leave_data: schema.StudyLeaveApplicant):
+def create_study_leave(db: Session, study_leave_data: schema.StudyLeaveApplicant, sender: int):
     try:
-        db_study_leave = model.StudyLeave(**study_leave_data.model_dump())
+        sld = study_leave_data.model_dump()
+        sld['sender_id']=sender
+        db_study_leave = model.StudyLeave(**sld)
         db.add(db_study_leave)
         db.commit()
         db.refresh(db_study_leave)
