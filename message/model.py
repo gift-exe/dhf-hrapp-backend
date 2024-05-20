@@ -85,7 +85,7 @@ class Evaluation(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_evaluations", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
+    comments = relationship("Comment", back_populates="evaluation", foreign_keys="[Comment.evaluation_id]")
 
 class Grade(Base):
     __tablename__ = 'grades'
@@ -165,7 +165,7 @@ class EarlyClosure(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_early_closures", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
+    comments = relationship("Comment", back_populates="early_closure", foreign_keys="[Comment.early_closure_id]")
 
 class StudyLeave(Base):
     __tablename__ = 'study-leave'
@@ -239,4 +239,4 @@ class StudyLeave(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_study_leaves", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
+    comments = relationship("Comment", back_populates="study_leave", foreign_keys="[Comment.study_leave_id]")
