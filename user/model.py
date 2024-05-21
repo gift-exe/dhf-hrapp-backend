@@ -1,7 +1,10 @@
-from sqlalchemy import String, Column, DateTime, func, BigInteger, Time, Integer, ForeignKey
+from sqlalchemy import String, Column, DateTime, func, BigInteger, Time, ForeignKey
 from sqlalchemy.orm import relationship
 from config.database import Base
-from message.model import message_recipients_association
+from message.model import (message_recipients_association, 
+                           evaluation_recipients_association,
+                           early_closure_recipients_association,
+                           study_leave_recipients_association)
 
 class User(Base):
     __tablename__ = 'users'
@@ -19,10 +22,14 @@ class User(Base):
     closing_time = Column(Time, nullable=True)
     
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="[Message.sender_id]")
-    received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association)
-    role = relationship("Office", back_populates="staff")
-    comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]")
-
     sent_early_closures = relationship("EarlyClosure", back_populates="sender", foreign_keys="[EarlyClosure.sender_id]")
     sent_study_leaves = relationship("StudyLeave", back_populates="sender", foreign_keys="[StudyLeave.sender_id]")
     sent_evaluations = relationship("Evaluation", back_populates="sender", foreign_keys="[Evaluation.sender_id]")
+
+    received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association)
+    received_evaluations = relationship("Evaluation", back_populates="recipients", secondary=evaluation_recipients_association)
+    received_early_closures = relationship("EarlyClosure", back_populates="recipients", secondary=early_closure_recipients_association)
+    received_study_leaves = relationship("StudyLeave", back_populates="recipients", secondary=study_leave_recipients_association)
+
+    role = relationship("Office", back_populates="staff")
+    comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]")

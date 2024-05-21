@@ -11,6 +11,7 @@ message_recipients_association = Table(
     Column('created_at', DateTime, nullable=False, default=func.now()),
     Column('updated_at', DateTime, nullable=False, default=func.now()),
 )
+
 class Message(Base):
     __tablename__ = 'messages'
 
@@ -54,6 +55,15 @@ class Comment(Base):
     study_leave = relationship("StudyLeave", back_populates="comments", foreign_keys=[study_leave_id])
     sender = relationship("User", back_populates="comments", foreign_keys=[sender_id])
 
+evaluation_recipients_association = Table(
+    'evaluation_recipients_association',
+    Base.metadata,
+    Column('evaluation_id', Integer, ForeignKey('evaluations.id')),
+    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('created_at', DateTime, nullable=False, default=func.now()),
+    Column('updated_at', DateTime, nullable=False, default=func.now()),
+)
+
 class Evaluation(Base):
     __tablename__ = 'evaluations'
 
@@ -74,17 +84,17 @@ class Evaluation(Base):
     date = Column(String, nullable=False)
     
     #files
-
     supervisor_signature = Column(String, nullable=False) 
-    school_admin_signature = Column(String, nullable=False)
-    head_teacher_signature = Column(String, nullable=False)
-    director_signature = Column(String, nullable=False)
+    school_admin_signature = Column(String)
+    head_teacher_signature = Column(String)
+    director_signature = Column(String)
 
     #grades
     grade = relationship('Grade', uselist=False, back_populates='evaluation')
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_evaluations", foreign_keys=[sender_id])
+    recipients = relationship("User", back_populates="received_evaluations", secondary=evaluation_recipients_association)
     comments = relationship("Comment", back_populates="evaluation", foreign_keys="[Comment.evaluation_id]")
 
 class Grade(Base):
@@ -129,6 +139,15 @@ class Grade(Base):
     evaluation_id = Column(Integer, ForeignKey('evaluations.id'))
     evaluation = relationship('Evaluation', back_populates='grade')
 
+early_closure_recipients_association = Table(
+    'early_closure_recipients_association',
+    Base.metadata,
+    Column('early_closure_id', Integer, ForeignKey('early-closures.id')),
+    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('created_at', DateTime, nullable=False, default=func.now()),
+    Column('updated_at', DateTime, nullable=False, default=func.now()),
+)
+
 class EarlyClosure(Base):
     __tablename__ = 'early-closures'
 
@@ -156,7 +175,6 @@ class EarlyClosure(Base):
     director_date = Column(String, nullable=False, default='no response')
 
     #files
-
     teacher_signature = Column(String, nullable=False)
     head_signature = Column(String, nullable=False, default='no response')
     hro_signature = Column(String, nullable=False, default='no response')
@@ -166,7 +184,16 @@ class EarlyClosure(Base):
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_early_closures", foreign_keys=[sender_id])
     comments = relationship("Comment", back_populates="early_closure", foreign_keys="[Comment.early_closure_id]")
+    recipients = relationship("User", back_populates="received_early_closures", secondary=early_closure_recipients_association)
 
+study_leave_recipients_association = Table(
+    'study_leave_recipients_association',
+    Base.metadata,
+    Column('early_leave_id', Integer, ForeignKey('study-leave.id')),
+    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('created_at', DateTime, nullable=False, default=func.now()),
+    Column('updated_at', DateTime, nullable=False, default=func.now()),
+)
 class StudyLeave(Base):
     __tablename__ = 'study-leave'
 
@@ -240,3 +267,4 @@ class StudyLeave(Base):
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_study_leaves", foreign_keys=[sender_id])
     comments = relationship("Comment", back_populates="study_leave", foreign_keys="[Comment.study_leave_id]")
+    recipients = relationship("User", back_populates="received_study_leaves", secondary=study_leave_recipients_association)

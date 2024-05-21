@@ -59,7 +59,7 @@ class ShareLeaveRequest(BaseModel):
     recipients: List[str]
 
 
-
+### EVALUATION ###
 class GradeBase(BaseModel):
     completes_task_on_time: str
     attends_school_meetings_till_closure: str
@@ -106,14 +106,21 @@ class EvaluationBase(BaseModel):
     remark: str
     date: str
     supervisor_signature: str
-    school_admin_signature: str
+    grades: GradeCreate
+    recipient_hos: str
+    
+class EvaluationHeadTeacherResponse(BaseModel):
     head_teacher_signature: str
+    recipient_hr: str
+
+class EvaluationHRResponse(BaseModel):
+    school_admin_signature: str
+    recipient_director: str    
+class EvaluationDirectorResponse(BaseModel):
     director_signature: str
-    grades: GradeCreate 
 
 class EvaluationCreate(EvaluationBase):
     pass
-
 class Evaluation(EvaluationBase):
     id: Optional[int]
     created_at: Optional[str]
@@ -133,6 +140,7 @@ class Grade(GradeBase):
         from_attributes = True
 
 
+### EARLY CLOSURE ###
 
 class EarlyClosureCreate(BaseModel):
     teacher: str
@@ -143,6 +151,7 @@ class EarlyClosureCreate(BaseModel):
     reason: str
     teacher_date: str
     teacher_signature: str
+    recipient_hos: str
 
 class EarlyClosureHOSResponse(BaseModel):
     head_comment: str
@@ -150,12 +159,14 @@ class EarlyClosureHOSResponse(BaseModel):
     appraiser_name: str
     appraiser_post: str
     head_signature: str
+    recipient_hr: str
 
 class EarlyClosureHRResponse(BaseModel):
     hro_comment: str
     hro_date: str
     hro_signature: str
     school_stamp: Optional[str] = None
+    recipient_director: str
 
 class EarlyClosureDirectorResponse(BaseModel):
     director_comment: str
@@ -189,6 +200,9 @@ class EarlyClosureRetrieve(BaseModel):
     director_signature: str
     school_stamp: str
 
+
+### STUDY LEAVE ###
+
 class StudyLeaveApplicant(BaseModel):
     applicant_name: str
     designation: str
@@ -206,6 +220,7 @@ class StudyLeaveApplicant(BaseModel):
     pursue_indication: str
     applicant_date: str
     applicant_signature: str
+    recipient_hos: str
 
 class StudyLeaveHeadTeacher(BaseModel):
     study_relevance: str
@@ -216,6 +231,7 @@ class StudyLeaveHeadTeacher(BaseModel):
     head_post: str
     head_date: str
     head_signature: str
+    recipient_hr: str
 
 class StudyLeaveAccountant(BaseModel):
     salary_cost: str
@@ -236,6 +252,8 @@ class StudyLeaveHR(BaseModel):
     hr_post: str
     hr_date: str
     hr_signature: str
+    recipient_accountant: str
+    recipient_director: str
 
 class StudyLeaveDirector(BaseModel):
     approval_status: str

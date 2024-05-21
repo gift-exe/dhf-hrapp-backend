@@ -86,8 +86,10 @@ def create_evaluation_with_grade(db: Session, evaluation: schema.EvaluationCreat
         eval = evaluation.model_dump()
         eval['sender_id'] = sender
         grade_data_dict = eval.pop('grades')
-
+        recipient = eval.pop('recipient_hos')
+        user = user_utils.get_user_by_email(email=recipient, db=db)
         db_evaluation = model.Evaluation(**eval)
+        db_evaluation.recipients.append(user)
         db.add(db_evaluation)
         db.commit()
         db.refresh(db_evaluation)
@@ -104,6 +106,43 @@ def create_evaluation_with_grade(db: Session, evaluation: schema.EvaluationCreat
         db.rollback()
         raise e
 
+def update_evaluation_hos_response(db:Session, evaluation_id: int, response_data:schema.EvaluationHeadTeacherResponse, user):
+    try:
+        db_evaluation = db.query(model.Evaluation).filter(model.Evaluation.id == evaluation_id).first()
+        if user not in db_evaluation.recipients:
+            raise AttributeError('Not a recipient of this evaluation')
+        db_evaluation.head_teacher_signature = response_data.head_teacher_signature
+        recipient = response_data.recipient_hr
+        user = user_utils.get_user_by_email(email=recipient, db=db)
+        db_evaluation.recipients.append(user)
+        db.commit()
+    except Exception as e:
+        raise e
+
+def update_evaluation_hr_response(db:Session, evaluation_id: int, response_data:schema.EvaluationHRResponse, user):
+    try:
+        db_evaluation = db.query(model.Evaluation).filter(model.Evaluation.id == evaluation_id).first()
+        if user not in db_evaluation.recipients:
+            raise AttributeError('Not a recipient of this evaluation')
+        db_evaluation.school_admin_signature = response_data.school_admin_signature
+        recipient = response_data.recipient_director
+        user = user_utils.get_user_by_email(email=recipient, db=db)
+        db_evaluation.recipients.append(user)
+        db.commit()
+    except Exception as e:
+        raise e
+
+def update_evaluation_director_response(db:Session, evaluation_id: int, response_data:schema.EvaluationDirectorResponse, user):
+    try:
+        db_evaluation = db.query(model.Evaluation).filter(model.Evaluation.id == evaluation_id).first()
+        if user not in db_evaluation.recipients:
+            raise AttributeError('Not a recipient of this evaluation')
+        db_evaluation.director_signature = response_data.director_signature
+        db.commit()
+    except Exception as e:
+        raise e
+
+
 def get_all_evaluations(db: Session):
     try:
         evaluations = db.query(model.Evaluation).all()
@@ -115,7 +154,10 @@ def create_early_closure(db: Session, early_closure_data: schema.EarlyClosureCre
     try:
         ecd = early_closure_data.model_dump()
         ecd['sender_id'] = sender
+        recipient = ecd.pop('recipient_hos')
+        user = user_utils.get_user_by_email(email=recipient, db=db)
         db_early_closure = model.EarlyClosure(**ecd)
+        db_early_closure.recipients.append(user)
         db.add(db_early_closure)
         db.commit()
         db.refresh(db_early_closure)
@@ -123,40 +165,53 @@ def create_early_closure(db: Session, early_closure_data: schema.EarlyClosureCre
     except Exception as e:
         raise e
 
-def update_early_closure_hos_response(db: Session, early_closure_id: int, response_data: schema.EarlyClosureHOSResponse):
+def update_early_closure_hos_response(db: Session, early_closure_id: int, response_data: schema.EarlyClosureHOSResponse, user):
     try:
         db_early_closure = db.query(model.EarlyClosure).filter(model.EarlyClosure.id == early_closure_id).first()
         if db_early_closure:
+            if user not in db_early_closure.recipients:
+                raise AttributeError('Not a recipient of this Early Closure')
             db_early_closure.head_comment = response_data.head_comment
             db_early_closure.head_date = response_data.head_date
             db_early_closure.appraiser_name = response_data.appraiser_name
             db_early_closure.appraiser_post = response_data.appraiser_post
             db_early_closure.head_signature = response_data.head_signature
+
+            recipient = response_data.recipient_hr
+            db_early_closure.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
             db.commit()
         else:
             raise ValueError("Early closure not found")
     except Exception as e:
         raise e
 
-def update_early_closure_hr_response(db: Session, early_closure_id: int, response_data: schema.EarlyClosureHRResponse):
+def update_early_closure_hr_response(db: Session, early_closure_id: int, response_data: schema.EarlyClosureHRResponse, user):
     try:
         db_early_closure = db.query(model.EarlyClosure).filter(model.EarlyClosure.id == early_closure_id).first()
         if db_early_closure:
+            if user not in db_early_closure.recipients:
+                raise AttributeError('Not a recipient of this Early Closure')
             db_early_closure.hro_comment = response_data.hro_comment
             db_early_closure.hro_date = response_data.hro_date
             db_early_closure.hro_signature = response_data.hro_signature
             if response_data.school_stamp:
                 db_early_closure.school_stamp = response_data.school_stamp
+            
+            recipient = response_data.recipient_director
+            db_early_closure.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
+
             db.commit()
         else:
             raise ValueError("Early closure not found")
     except Exception as e:
         raise e
 
-def update_early_closure_director_response(db: Session, early_closure_id: int, response_data: schema.EarlyClosureDirectorResponse):
+def update_early_closure_director_response(db: Session, early_closure_id: int, response_data: schema.EarlyClosureDirectorResponse, user):
     try:
         db_early_closure = db.query(model.EarlyClosure).filter(model.EarlyClosure.id == early_closure_id).first()
         if db_early_closure:
+            if user not in db_early_closure.recipients:
+                raise AttributeError('Not a recipient of this Early Closure')
             db_early_closure.director_comment = response_data.director_comment
             db_early_closure.director_date = response_data.director_date
             db_early_closure.director_signature = response_data.director_signature
@@ -172,7 +227,10 @@ def create_study_leave(db: Session, study_leave_data: schema.StudyLeaveApplicant
     try:
         sld = study_leave_data.model_dump()
         sld['sender_id']=sender
+        recipient = sld.pop('recipient_hos')
+        user = user_utils.get_user_by_email(email=recipient, db=db)
         db_study_leave = model.StudyLeave(**sld)
+        db_study_leave.recipients.append(user)
         db.add(db_study_leave)
         db.commit()
         db.refresh(db_study_leave)
@@ -180,10 +238,12 @@ def create_study_leave(db: Session, study_leave_data: schema.StudyLeaveApplicant
     except Exception as e:
         raise e
 
-def update_study_leave_head_teacher_response(db: Session, study_leave_id: int, response_data: schema.StudyLeaveHeadTeacher):
+def update_study_leave_head_teacher_response(db: Session, study_leave_id: int, response_data: schema.StudyLeaveHeadTeacher, user):
     try:
         db_study_leave = db.query(model.StudyLeave).filter(model.StudyLeave.id == study_leave_id).first()
         if db_study_leave:
+            if user not in db_study_leave.recipients:
+                raise AttributeError('Not a recipient of this study leave')
             db_study_leave.study_relevance = response_data.study_relevance
             db_study_leave.applicant_job_desc = response_data.applicant_job_desc
             db_study_leave.duties_to_cover = response_data.duties_to_cover
@@ -192,16 +252,21 @@ def update_study_leave_head_teacher_response(db: Session, study_leave_id: int, r
             db_study_leave.head_post = response_data.head_post
             db_study_leave.head_date = response_data.head_date
             db_study_leave.head_signature = response_data.head_signature
+            
+            recipient = response_data.recipient_hr
+            db_study_leave.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
             db.commit()
         else:
             raise ValueError("Study leave not found")
     except Exception as e:
         raise e
 
-def update_study_leave_accountant_response(db: Session, study_leave_id: int, response_data: schema.StudyLeaveAccountant):
+def update_study_leave_accountant_response(db: Session, study_leave_id: int, response_data: schema.StudyLeaveAccountant, user):
     try:
         db_study_leave = db.query(model.StudyLeave).filter(model.StudyLeave.id == study_leave_id).first()
         if db_study_leave:
+            if user not in db_study_leave.recipients:
+                raise AttributeError('Not a recipient of this study leave')
             db_study_leave.salary_cost = response_data.salary_cost
             db_study_leave.accountant_name = response_data.accountant_name
             db_study_leave.accountant_post = response_data.accountant_post
@@ -213,10 +278,12 @@ def update_study_leave_accountant_response(db: Session, study_leave_id: int, res
     except Exception as e:
         raise e
 
-def update_study_leave_hr_response(db: Session, study_leave_id: int, response_data: schema.StudyLeaveHR):
+def update_study_leave_hr_response(db: Session, study_leave_id: int, response_data: schema.StudyLeaveHR, user):
     try:
         db_study_leave = db.query(model.StudyLeave).filter(model.StudyLeave.id == study_leave_id).first()
         if db_study_leave:
+            if user not in db_study_leave.recipients:
+                raise AttributeError('Not a recipient of this study leave')
             db_study_leave.approval_grant = response_data.approval_grant
             db_study_leave.grant_with_pay = response_data.grant_with_pay
             db_study_leave.granted_program = response_data.granted_program
@@ -228,6 +295,12 @@ def update_study_leave_hr_response(db: Session, study_leave_id: int, response_da
             db_study_leave.hr_post = response_data.hr_post
             db_study_leave.hr_date = response_data.hr_date
             db_study_leave.hr_signature = response_data.hr_signature
+            
+            recipient = response_data.recipient_accountant
+            db_study_leave.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
+            recipient = response_data.recipient_director
+            db_study_leave.recipients.append(user_utils.get_user_by_email(email=recipient, db=db))
+            
             db.commit()
         else:
             raise ValueError("Study leave not found")

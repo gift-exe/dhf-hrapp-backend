@@ -188,6 +188,69 @@ async def perform_evaluation(
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
+@router.put('/respond-evaluation/{evaluation_id}/head-teacher')
+async def respond_evaluation_hos(
+    evaluation_id: int,
+    response: schema.EvaluationHeadTeacherResponse,
+    db:Session = Depends(get_db),
+    current_user_id = Depends(security.get_current_user)    
+):
+    try:
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+        if user.role.name != 'hos':
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be head of section'}))
+        
+        # Update Early Closure record with HOS response
+        utils.update_evaluation_hos_response(db=db, evaluation_id=evaluation_id, response_data=response, user=user)
+
+        # TODO: Send notification to HR
+        return Response(status_code=200, content=json.dumps({'message':'HOS Response Submitted Successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
+
+@router.put('/respond-evaluation/{evaluation_id}/hr')
+async def respond_evaluation_hr(
+    evaluation_id: int,
+    response: schema.EvaluationHRResponse,
+    db:Session = Depends(get_db),
+    current_user_id = Depends(security.get_current_user)    
+):
+    try:
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+        if user.role.name != 'hr':
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr'}))
+        
+        # Update Early Closure record with HOS response
+        utils.update_evaluation_hr_response(db=db, evaluation_id=evaluation_id, response_data=response, user=user)
+
+        # TODO: Send notification to HR
+        return Response(status_code=200, content=json.dumps({'message':'HR Response Submitted Successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
+
+@router.put('/respond-evaluation/{evaluation_id}/director')
+async def respond_evaluation_director(
+    evaluation_id: int,
+    response: schema.EvaluationDirectorResponse,
+    db:Session = Depends(get_db),
+    current_user_id = Depends(security.get_current_user)    
+):
+    try:
+        user = user_utils.get_user(db=db, user_id=current_user_id.id)
+        if user.role.name != 'admin':
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be director admin'}))
+        
+        # Update Early Closure record with HOS response
+        utils.update_evaluation_director_response(db=db, evaluation_id=evaluation_id, response_data=response, user=user)
+
+        # TODO: Send notification to HR
+        return Response(status_code=200, content=json.dumps({'message':'Director Response Submitted Successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
+
 @router.get('/evaluations')
 async def get_evaluations(
     db: Session = Depends(get_db), 
@@ -264,7 +327,7 @@ async def respond_early_closure_hos(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be head of section'}))
         
         # Update Early Closure record with HOS response
-        utils.update_early_closure_hos_response(db=db, early_closure_id=early_closure_id, response_data=response_data)
+        utils.update_early_closure_hos_response(db=db, early_closure_id=early_closure_id, response_data=response_data, user=user)
 
         # TODO: Send notification to HR
         return Response(status_code=200, content=json.dumps({'message':'HOS Response Submitted Successfully'}))
@@ -285,7 +348,7 @@ async def respond_early_closure_hr(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be HR'}))
 
         # Update Early Closure record with HR response
-        utils.update_early_closure_hr_response(db=db, early_closure_id=early_closure_id, response_data=response_data)
+        utils.update_early_closure_hr_response(db=db, early_closure_id=early_closure_id, response_data=response_data, user=user)
 
         # TODO: Send notification to Director
         return Response(status_code=200, content=json.dumps({'message':'HR Response Submitted Successfully'}))
@@ -306,7 +369,7 @@ async def respond_early_closure_director(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Director'}))
 
         # Update Early Closure record with Director response
-        utils.update_early_closure_director_response(db=db, early_closure_id=early_closure_id, response_data=response_data)
+        utils.update_early_closure_director_response(db=db, early_closure_id=early_closure_id, response_data=response_data, user=user)
 
         # TODO: Notify user or take any other necessary action
         return Response(status_code=200, content=json.dumps({'message':'Director Response Submitted Successfully'}))
@@ -384,9 +447,9 @@ async def respond_study_leave_head_teacher(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be a head teacher'}))
         
         # Update Study Leave record with Head Teacher's response
-        utils.update_study_leave_head_teacher_response(db=db, study_leave_id=study_leave_id, response_data=response_data)
+        utils.update_study_leave_head_teacher_response(db=db, study_leave_id=study_leave_id, response_data=response_data, user=user)
 
-        # TODO: Send notification to Accountant
+        # TODO: Send notification to HR
         return Response(status_code=200, content=json.dumps({'message':'Head Teacher Response Submitted Successfully'}))
 
     except Exception as e:
@@ -405,7 +468,7 @@ async def respond_study_leave_accountant(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be an accountant'}))
 
         # Update Study Leave record with Accountant's response
-        utils.update_study_leave_accountant_response(db=db, study_leave_id=study_leave_id, response_data=response_data)
+        utils.update_study_leave_accountant_response(db=db, study_leave_id=study_leave_id, response_data=response_data, user=user)
 
         # TODO: Send notification to HR
         return Response(status_code=200, content=json.dumps({'message':'Accountant Response Submitted Successfully'}))
@@ -426,7 +489,7 @@ async def respond_study_leave_hr(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be HR'}))
 
         # Update Study Leave record with HR's response
-        utils.update_study_leave_hr_response(db=db, study_leave_id=study_leave_id, response_data=response_data)
+        utils.update_study_leave_hr_response(db=db, study_leave_id=study_leave_id, response_data=response_data, user=user)
 
         # TODO: Send notification to Director
         return Response(status_code=200, content=json.dumps({'message':'HR Response Submitted Successfully'}))
@@ -447,7 +510,7 @@ async def respond_study_leave_director(
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Director'}))
 
         # Update Study Leave record with Director's response
-        utils.update_study_leave_director_response(db=db, study_leave_id=study_leave_id, response_data=response_data)
+        utils.update_study_leave_director_response(db=db, study_leave_id=study_leave_id, response_data=response_data, user=user)
 
         # TODO: Notify user or take any other necessary action
         return Response(status_code=200, content=json.dumps({'message':'Director Response Submitted Successfully'}))
