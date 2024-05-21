@@ -1,11 +1,13 @@
 from fastapi import APIRouter
 from fastapi import HTTPException, Depends, Response
-from user import utils, schema
+from user import utils, schema, model
 from config import security
 from sqlalchemy.orm import Session
 from config.database import SessionLocal
 import json
 from datetime import time
+from office import utils as office_utils
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -109,11 +111,70 @@ async def get_users(db: Session = Depends(get_db),
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
 @router.patch('/edit-user-role')
-async def edit_role(db:Session = Depends(get_db),
-                    current_user_id = Depends(security.get_current_user)):
-    ...
+async def edit_role(data: schema.EditUserRole,
+                    db:Session = Depends(get_db),
+                    current_user_id = Depends(security.get_current_user)
+):
+    try:
+        user = utils.get_user(db=db, user_id=current_user_id.id)
+        if user.role.name not in ['admin', 'hr']:
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Hr or Admin'}))
+
+        edit_user = utils.get_user(user_id=data.user_id)
+        edit_user.role = office_utils.get_office_by_name(db=db, name=data.role).id
+        db.commit()
+
+        # TODO: Notify user or take any other necessary action
+        return Response(status_code=200, content=json.dumps({'message':'User Data Updated Successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
 
 @router.patch('/edit-user-details')
-async def edit_data(db:Session = Depends(get_db),
+async def edit_data(edit_user: schema.EditUserRole,
+                    db:Session = Depends(get_db),
                     current_user_id = Depends(security.get_current_user)):
-    ...
+    try:
+        l_user = utils.get_user(db=db, user_id=current_user_id.id)
+        if l_user.role.name not in ['admin', 'hr']:
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Hr or Admin'}))
+
+        user = utils.get_user(user_id=edit_user.user_id)
+        if edit_user.first_name is not None:
+            user.first_name = edit_user.first_name
+        if edit_user.last_name is not None:
+            user.last_name = edit_user.last_name
+        if edit_user.email is not None:
+            user.email = edit_user.email
+        if edit_user.phone is not None:
+            user.phone = edit_user.phone
+        
+        user.updated_at = func.now()
+
+        db.commit()
+
+        # TODO: Notify user or take any other necessary action
+        return Response(status_code=200, content=json.dumps({'message':'User Role Updated Successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
+
+@router.delete('/user')
+async def delete_user(data: schema.DeleteUser,
+                    db:Session = Depends(get_db),
+                    current_user_id = Depends(security.get_current_user)):
+    try:
+        user = utils.get_user(db=db, user_id=current_user_id.id)
+        if user.role.name not in ['admin', 'hr']:
+            raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Hr or Admin'}))
+
+        del_user = db.query(model.User).filter(model.User.id == data.user_id).first()
+
+        db.delete(user)
+        db.commit()
+
+        # TODO: Notify user or take any other necessary action
+        return Response(status_code=200, content=json.dumps({'message':'User Deleted Successfully'}))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))

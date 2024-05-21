@@ -78,3 +78,23 @@ class GetUsers(BaseModel):
             email = user.email,
             role = user.role.name
         )
+    
+class EditUser(BaseModel):
+    user_id: int
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+class EditUserRole(BaseModel):
+    user_id: int
+    role: str
+
+    class Config:
+        orm_mode = True
+
+class DeleteUser(BaseModel):
+    user_id: int
