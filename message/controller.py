@@ -146,7 +146,74 @@ async def get_messages(db: Session = Depends(get_db), current_user_id = Depends(
         messages = user.received_messages
         return_messsages = [schema.ReturnMessage.to_dict(msg=msg, comments=msg.comments, db=db).model_dump() for msg in messages]
 
-        return Response(status_code=200, content=json.dumps(return_messsages))
+        #early closures
+        early_closures = user.received_early_closures
+        return_early_closures = []
+        for ec in early_closures:
+            cmts = ec.comments
+            ec = ec.__dict__
+            del ec['_sa_instance_state']
+            ec['created_at'] = ec['created_at'].isoformat()
+            ec['updated_at'] = ec['updated_at'].isoformat()
+            ec['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['evaluation_id'], c['message_id'], c['study_leave_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                ec['comments'].append(c)
+            return_early_closures.append(ec)
+
+        #study leaves
+        study_leaves = user.received_study_leaves
+        return_study_leaves = []
+        for sl in study_leaves:
+            cmts = sl.comments
+            sl = sl.__dict__
+            del sl['_sa_instance_state']
+            sl['created_at'] = sl['created_at'].isoformat()
+            sl['updated_at'] = sl['updated_at'].isoformat()
+            sl['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['evaluation_id'], c['message_id'], c['early_closure_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                sl['comments'].append(c)
+            return_study_leaves.append(sl)
+
+        #evaluations
+        evaluations = user.received_evaluations
+        return_evaluations = []
+        for e in evaluations:
+            grade = e.grade.__dict__
+            del grade['_sa_instance_state']
+            del grade['created_at']
+            del grade['updated_at']
+
+            cmts = e.comments
+            e = e.__dict__
+            del e['_sa_instance_state']
+            e['created_at'] = e['created_at'].isoformat()
+            e['updated_at'] = e['updated_at'].isoformat()
+            e['grade'] = grade
+            e['comments'] = []
+            for c in cmts:
+                c = c.__dict__
+                del c['_sa_instance_state'], c['study_leave_id'], c['message_id'], c['early_closure_id']
+                c['created_at'] = c['created_at'].isoformat()
+                c['updated_at'] = c['updated_at'].isoformat()
+                e['comments'].append(c)
+            return_evaluations.append(e)
+        
+        return_dict = {
+            'messages':return_messsages,
+            'study_leaves':return_study_leaves,
+            'early_closures':return_early_closures,
+            'evaluations': return_evaluations
+        }
+
+        return Response(status_code=200, content=json.dumps(return_dict))
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 

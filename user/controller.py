@@ -107,3 +107,13 @@ async def get_users(db: Session = Depends(get_db),
         return Response(status_code=200, content=json.dumps(users))
     except Exception as e:
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+
+@router.patch('/edit-user-role')
+async def edit_role(db:Session = Depends(get_db),
+                    current_user_id = Depends(security.get_current_user)):
+    ...
+
+@router.patch('/edit-user-details')
+async def edit_data(db:Session = Depends(get_db),
+                    current_user_id = Depends(security.get_current_user)):
+    ...
