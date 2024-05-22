@@ -6,8 +6,8 @@ from config.database import Base
 message_recipients_association = Table(
     'message_recipients_association',
     Base.metadata,
-    Column('message_id', Integer, ForeignKey('messages.id')),
-    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('message_id', Integer, ForeignKey('messages.id', ondelete='CASCADE')),
+    Column('recipient_id', Integer, ForeignKey('users.id', ondelete='CASCADE')),
     Column('created_at', DateTime, nullable=False, default=func.now()),
     Column('updated_at', DateTime, nullable=False, default=func.now()),
 )
@@ -27,7 +27,7 @@ class Message(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now())
     
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
-    recipients = relationship("User", back_populates="received_messages", secondary=message_recipients_association)
+    recipients = relationship("User", back_populates="received_messages", secondary=message_recipients_association, cascade="all, delete")
 
     comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]", cascade="all, delete, delete-orphan")
 
@@ -58,8 +58,8 @@ class Comment(Base):
 evaluation_recipients_association = Table(
     'evaluation_recipients_association',
     Base.metadata,
-    Column('evaluation_id', Integer, ForeignKey('evaluations.id')),
-    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('evaluation_id', Integer, ForeignKey('evaluations.id', ondelete='CASCADE')),
+    Column('recipient_id', Integer, ForeignKey('users.id', ondelete='CASCADE')),
     Column('created_at', DateTime, nullable=False, default=func.now()),
     Column('updated_at', DateTime, nullable=False, default=func.now()),
 )
@@ -142,8 +142,8 @@ class Grade(Base):
 early_closure_recipients_association = Table(
     'early_closure_recipients_association',
     Base.metadata,
-    Column('early_closure_id', Integer, ForeignKey('early-closures.id')),
-    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('early_closure_id', Integer, ForeignKey('early-closures.id', ondelete='CASCADE')),
+    Column('recipient_id', Integer, ForeignKey('users.id', ondelete='CASCADE')),
     Column('created_at', DateTime, nullable=False, default=func.now()),
     Column('updated_at', DateTime, nullable=False, default=func.now()),
 )
@@ -189,8 +189,8 @@ class EarlyClosure(Base):
 study_leave_recipients_association = Table(
     'study_leave_recipients_association',
     Base.metadata,
-    Column('early_leave_id', Integer, ForeignKey('study-leave.id')),
-    Column('recipient_id', Integer, ForeignKey('users.id')),
+    Column('early_leave_id', Integer, ForeignKey('study-leave.id', ondelete='CASCADE')),
+    Column('recipient_id', Integer, ForeignKey('users.id', ondelete='CASCADE')),
     Column('created_at', DateTime, nullable=False, default=func.now()),
     Column('updated_at', DateTime, nullable=False, default=func.now()),
 )

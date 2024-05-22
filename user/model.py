@@ -26,10 +26,10 @@ class User(Base):
     sent_study_leaves = relationship("StudyLeave", back_populates="sender", foreign_keys="[StudyLeave.sender_id]", cascade="all, delete, delete-orphan")
     sent_evaluations = relationship("Evaluation", back_populates="sender", foreign_keys="[Evaluation.sender_id]", cascade="all, delete, delete-orphan")
 
-    received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association, cascade="all, delete, delete-orphan")
-    received_evaluations = relationship("Evaluation", back_populates="recipients", secondary=evaluation_recipients_association, cascade="all, delete, delete-orphan")
-    received_early_closures = relationship("EarlyClosure", back_populates="recipients", secondary=early_closure_recipients_association, cascade="all, delete, delete-orphan")
-    received_study_leaves = relationship("StudyLeave", back_populates="recipients", secondary=study_leave_recipients_association, cascade="all, delete, delete-orphan")
+    received_messages = relationship("Message", back_populates="recipients", secondary=message_recipients_association, cascade="all, delete")
+    received_evaluations = relationship("Evaluation", back_populates="recipients", secondary=evaluation_recipients_association, cascade="all, delete")
+    received_early_closures = relationship("EarlyClosure", back_populates="recipients", secondary=early_closure_recipients_association, cascade="all, delete")
+    received_study_leaves = relationship("StudyLeave", back_populates="recipients", secondary=study_leave_recipients_association, cascade="all, delete")
 
     role = relationship("Office", back_populates="staff")
     comments = relationship("Comment", back_populates="sender", foreign_keys="[Comment.sender_id]", cascade="all, delete, delete-orphan")
