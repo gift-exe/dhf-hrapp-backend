@@ -174,7 +174,7 @@ async def delete_user(data: schema.DeleteUser,
 
         del_user = db.query(model.User).filter(model.User.id == data.user_id).first()
 
-        db.delete(user)
+        db.delete(del_user)
         db.commit()
 
         # TODO: Notify user or take any other necessary action
