@@ -104,7 +104,7 @@ async def get_users(db: Session = Depends(get_db),
                     current_user_id = Depends(security.get_current_user)):
     try:        
         db_users = utils.get_users(db=db, user_id=current_user_id.id)
-        users = [schema.GetUsers.to_dict(user=user).model_dump() for user in db_users]
+        users = [schema.User.to_dict(user=user).model_dump() for user in db_users]
         
         return Response(status_code=200, content=json.dumps(users))
     except Exception as e:
