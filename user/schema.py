@@ -85,6 +85,7 @@ class EditUser(BaseModel):
     last_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[int] = None
+    role: Optional[str] = None
 
     class Config:
         orm_mode = True

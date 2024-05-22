@@ -9,7 +9,7 @@ import json
 from helpers.upload_helper import do_upload
 
 from fastapi import Form, UploadFile
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 
 router = APIRouter()
 
@@ -22,22 +22,22 @@ def get_db():
         db.close()
 
 @router.post('/upload-document/')
-async def upload_document(document: UploadFile, 
+async def upload_document(
                           title: Annotated[str, Form()], 
                           label: Annotated[str, Form()],
                           recipients: Annotated[List[str], Form()],
                           text: Annotated[str, Form()]=None,
+                          document: Optional[UploadFile]=None, 
                           db: Session = Depends(get_db), 
                           current_user_id = Depends(security.get_current_user)
                           ):
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
         
-        if document is None:
-            raise HTTPException(status_code=400, detail=json.dumps({'message':'No document to upload'}))
-
-        #upload document first
-        doc_url = do_upload(document, user.email)
+        if document is not None:
+            #upload document first
+            doc_url = do_upload(document, user.email)
+            # raise HTTPException(status_code=400, detail=json.dumps({'message':'No document to upload'}))
 
         #store details in db
         message_data = {'sender_id':user.id,

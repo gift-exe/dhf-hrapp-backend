@@ -121,7 +121,9 @@ async def edit_role(data: schema.EditUserRole,
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Hr or Admin'}))
 
         edit_user = utils.get_user(user_id=data.user_id)
-        edit_user.role = office_utils.get_office_by_name(db=db, name=data.role).id
+        edit_user.role = office_utils.get_office_by_name(db=db, name=data.role)
+        
+        user.updated_at = func.now()
         db.commit()
 
         # TODO: Notify user or take any other necessary action
@@ -131,7 +133,7 @@ async def edit_role(data: schema.EditUserRole,
         raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occurred', 'error': str(e)}))
 
 @router.patch('/edit-user-details')
-async def edit_data(edit_user: schema.EditUserRole,
+async def edit_data(edit_user: schema.EditUser,
                     db:Session = Depends(get_db),
                     current_user_id = Depends(security.get_current_user)):
     try:
@@ -148,6 +150,8 @@ async def edit_data(edit_user: schema.EditUserRole,
             user.email = edit_user.email
         if edit_user.phone is not None:
             user.phone = edit_user.phone
+        if edit_user.role is not None:
+            user.role_id = office_utils.get_office_by_name(db=db, name=edit_user.role).id
         
         user.updated_at = func.now()
 
