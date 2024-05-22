@@ -29,7 +29,7 @@ class Message(Base):
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
     recipients = relationship("User", back_populates="received_messages", secondary=message_recipients_association)
 
-    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]")
+    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]", cascade="all, delete, delete-orphan")
 
 class Comment(Base):
     #whaky hack lmao
@@ -90,12 +90,12 @@ class Evaluation(Base):
     director_signature = Column(String)
 
     #grades
-    grade = relationship('Grade', uselist=False, back_populates='evaluation')
+    grade = relationship('Grade', uselist=False, back_populates='evaluation', cascade="all, delete, delete-orphan")
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_evaluations", foreign_keys=[sender_id])
     recipients = relationship("User", back_populates="received_evaluations", secondary=evaluation_recipients_association)
-    comments = relationship("Comment", back_populates="evaluation", foreign_keys="[Comment.evaluation_id]")
+    comments = relationship("Comment", back_populates="evaluation", foreign_keys="[Comment.evaluation_id]", cascade="all, delete, delete-orphan")
 
 class Grade(Base):
     __tablename__ = 'grades'
@@ -183,7 +183,7 @@ class EarlyClosure(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_early_closures", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="early_closure", foreign_keys="[Comment.early_closure_id]")
+    comments = relationship("Comment", back_populates="early_closure", foreign_keys="[Comment.early_closure_id]", cascade="all, delete, delete-orphan")
     recipients = relationship("User", back_populates="received_early_closures", secondary=early_closure_recipients_association)
 
 study_leave_recipients_association = Table(
@@ -266,5 +266,5 @@ class StudyLeave(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_study_leaves", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="study_leave", foreign_keys="[Comment.study_leave_id]")
+    comments = relationship("Comment", back_populates="study_leave", foreign_keys="[Comment.study_leave_id]", cascade="all, delete, delete-orphan")
     recipients = relationship("User", back_populates="received_study_leaves", secondary=study_leave_recipients_association)
