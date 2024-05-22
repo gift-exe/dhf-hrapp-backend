@@ -31,6 +31,8 @@ class ReturnMessage(BaseModel):
     document: Optional[str] = None
     status: str = None
     comments: List[dict] = []
+    created_at: str
+    updated_at: str
 
     @classmethod
     def to_dict(cls, msg:MMessage, comments:MComment, db:Session) -> "ReturnMessage":
@@ -44,6 +46,8 @@ class ReturnMessage(BaseModel):
             text=msg.text,
             document=msg.document,
             status=msg.status,
+            created_at = msg.created_at.isoformat(),
+            updated_at = msg.updated_at.isoformat(),
             comments = [{'comments_id':comment.id, 
                          'text':comment.text, 
                          'sender':f'{user_utils.get_user(db=db, user_id=comment.sender_id).first_name} {user_utils.get_user(db=db, user_id=comment.sender_id).last_name}'} 
