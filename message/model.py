@@ -71,23 +71,23 @@ class Evaluation(Base):
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
-    supervisor = Column(String, nullable=False)
-    supervisor_post = Column(String, nullable=False)
+    supervisor = Column(String, nullable=False, default='no response')
+    supervisor_post = Column(String, nullable=False, default='no response')
     
-    term = Column(String, nullable=False)
-    session = Column(String, nullable=False)
+    term = Column(String, nullable=False, default='no response')
+    session = Column(String, nullable=False, default='no response')
     
-    peer = Column(String, nullable=False)
-    peer_post = Column(String, nullable=False)
+    peer = Column(String, nullable=False, default='no response')
+    peer_post = Column(String, nullable=False, default='no response')
 
-    remark = Column(String, nullable=False)
-    date = Column(String, nullable=False)
+    remark = Column(String, nullable=False, default='no response')
+    date = Column(String, nullable=False, default='no response')
     
     #files
-    supervisor_signature = Column(String, nullable=False) 
-    school_admin_signature = Column(String)
-    head_teacher_signature = Column(String)
-    director_signature = Column(String)
+    supervisor_signature = Column(String, nullable=False, default='no response') 
+    school_admin_signature = Column(String, default='no response')
+    head_teacher_signature = Column(String, default='no response')
+    director_signature = Column(String, default='no response')
 
     #grades
     grade = relationship('Grade', uselist=False, back_populates='evaluation', cascade="all, delete-orphan")
@@ -155,13 +155,13 @@ class EarlyClosure(Base):
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
-    teacher = Column(String, nullable=False)
-    clas = Column(String, nullable=False)
-    section = Column(String, nullable=False)
-    permission = Column(String, nullable=False)
-    period = Column(String, nullable=False)
-    reason = Column(String, nullable=False)
-    teacher_date = Column(String, nullable=False)
+    teacher = Column(String, nullable=False, default='no response')
+    clas = Column(String, nullable=False, default='no response')
+    section = Column(String, nullable=False, default='no response')
+    permission = Column(String, nullable=False, default='no response')
+    period = Column(String, nullable=False, default='no response')
+    reason = Column(String, nullable=False, default='no response')
+    teacher_date = Column(String, nullable=False, default='no response')
     
     head_comment = Column(String, nullable=False, default='no response')
     head_date = Column(String, nullable=False, default='no response')
@@ -202,25 +202,25 @@ class StudyLeave(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
     #applicant info
-    applicant_name = Column(String, nullable=False)
-    designation = Column(String, nullable=False)
-    years_served = Column(String, nullable=False)
+    applicant_name = Column(String, nullable=False, default='no response')
+    designation = Column(String, nullable=False, default='no response')
+    years_served = Column(String, nullable=False, default='no response')
     
-    institute_of_study = Column(String, nullable=False)
-    course_of_study = Column(String, nullable=False)
-    area_of_study = Column(String, nullable=False)
-    duration_of_study = Column(String, nullable=False)
-    purpose_of_study = Column(String, nullable=False)
-    start_date = Column(String, nullable=False)
-    end_date = Column(String, nullable=False)
+    institute_of_study = Column(String, nullable=False, default='no response')
+    course_of_study = Column(String, nullable=False, default='no response')
+    area_of_study = Column(String, nullable=False, default='no response')
+    duration_of_study = Column(String, nullable=False, default='no response')
+    purpose_of_study = Column(String, nullable=False, default='no response')
+    start_date = Column(String, nullable=False, default='no response')
+    end_date = Column(String, nullable=False, default='no response')
     
-    education_status = Column(String, nullable=False)
-    year_obtained = Column(String, nullable=False)
-    last_study_period = Column(String, nullable=False)
+    education_status = Column(String, nullable=False, default='no response')
+    year_obtained = Column(String, nullable=False, default='no response')
+    last_study_period = Column(String, nullable=False, default='no response')
 
-    pursue_indication = Column(String, nullable=False)
+    pursue_indication = Column(String, nullable=False, default='no response')
 
-    applicant_date = Column(String, nullable=False)
+    applicant_date = Column(String, nullable=False, default='no response')
 
     #headd teacher info
     study_relevance = Column(String, nullable=False, default='no response')
