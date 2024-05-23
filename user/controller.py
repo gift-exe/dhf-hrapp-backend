@@ -120,7 +120,7 @@ async def edit_role(data: schema.EditUserRole,
         if user.role.name not in ['admin', 'hr']:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Hr or Admin'}))
 
-        edit_user = utils.get_user(user_id=data.user_id)
+        edit_user = utils.get_user(db=db, user_id=data.user_id)
         edit_user.role = office_utils.get_office_by_name(db=db, name=data.role)
         
         user.updated_at = func.now()
@@ -141,7 +141,7 @@ async def edit_data(edit_user: schema.EditUser,
         if l_user.role.name not in ['admin', 'hr']:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be Hr or Admin'}))
 
-        user = utils.get_user(user_id=edit_user.user_id)
+        user = utils.get_user(db=db, user_id=edit_user.user_id)
         if edit_user.first_name is not None:
             user.first_name = edit_user.first_name
         if edit_user.last_name is not None:
