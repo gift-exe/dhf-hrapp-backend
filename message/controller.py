@@ -600,7 +600,7 @@ async def respond_study_leave_director(
 @router.get('/study-leaves')
 async def view_all_leave_requests(db: Session = Depends(get_db), 
                                   current_user_id = Depends(security.get_current_user)):
-    #try:
+    try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
 
         if user.role.name not in ['hr', 'admin']:
@@ -628,13 +628,11 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
                 r = user_schema.User.to_dict(db_item=user).model_dump()
                 lr['recipients'].append(r)
             return_messsages.append(lr)
-            print(f'\n{lr}\n')
-            
 
         return Response(status_code=200, content=json.dumps(return_messsages))
     
-    #except Exception as e:
-    #    raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
 # share leave request with next office (head of section)
 @router.post('/share-leave-request')
