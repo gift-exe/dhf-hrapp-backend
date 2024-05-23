@@ -34,11 +34,11 @@ async def upload_document(
                           ):
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
+        print(current_user_id.id)
         
         if document is not None:
             #upload document first
             doc_url = do_upload(document, user.email)
-            # raise HTTPException(status_code=400, detail=json.dumps({'message':'No document to upload'}))
 
         #store details in db
         message_data = {'sender_id':user.id,

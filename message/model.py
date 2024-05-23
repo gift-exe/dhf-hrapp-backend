@@ -16,7 +16,7 @@ class Message(Base):
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True)
-    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'))
     label = Column(String, nullable=False)
     title = Column(String, nullable=False)
     text = Column(String, nullable=True)
@@ -27,9 +27,9 @@ class Message(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now())
     
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
-    recipients = relationship("User", back_populates="received_messages", secondary=message_recipients_association, cascade="all, delete")
+    recipients = relationship("User", back_populates="received_messages", secondary=message_recipients_association)
 
-    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]", cascade="all, delete, delete-orphan")
+    comments = relationship("Comment", back_populates="message", foreign_keys="[Comment.message_id]", cascade="all, delete-orphan")
 
 class Comment(Base):
     #whaky hack lmao
@@ -38,13 +38,13 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     text = Column(String, nullable=False)
     
-    message_id = Column(Integer, ForeignKey("messages.id"))
-    evaluation_id = Column(Integer, ForeignKey("evaluations.id"))
-    early_closure_id = Column(Integer, ForeignKey("early-closures.id"))
-    study_leave_id = Column(Integer, ForeignKey("study-leave.id"))
+    message_id = Column(Integer, ForeignKey("messages.id", ondelete='CASCADE'))
+    evaluation_id = Column(Integer, ForeignKey("evaluations.id", ondelete='CASCADE'))
+    early_closure_id = Column(Integer, ForeignKey("early-closures.id", ondelete='CASCADE'))
+    study_leave_id = Column(Integer, ForeignKey("study-leave.id", ondelete='CASCADE'))
     type = Column(String, nullable=False, default='message')
     
-    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'))
 
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())
@@ -90,12 +90,12 @@ class Evaluation(Base):
     director_signature = Column(String)
 
     #grades
-    grade = relationship('Grade', uselist=False, back_populates='evaluation', cascade="all, delete, delete-orphan")
+    grade = relationship('Grade', uselist=False, back_populates='evaluation', cascade="all, delete-orphan")
 
-    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'))
     sender = relationship("User", back_populates="sent_evaluations", foreign_keys=[sender_id])
     recipients = relationship("User", back_populates="received_evaluations", secondary=evaluation_recipients_association)
-    comments = relationship("Comment", back_populates="evaluation", foreign_keys="[Comment.evaluation_id]", cascade="all, delete, delete-orphan")
+    comments = relationship("Comment", back_populates="evaluation", foreign_keys="[Comment.evaluation_id]", cascade="all, delete-orphan")
 
 class Grade(Base):
     __tablename__ = 'grades'
@@ -183,7 +183,7 @@ class EarlyClosure(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_early_closures", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="early_closure", foreign_keys="[Comment.early_closure_id]", cascade="all, delete, delete-orphan")
+    comments = relationship("Comment", back_populates="early_closure", foreign_keys="[Comment.early_closure_id]", cascade="all, delete-orphan")
     recipients = relationship("User", back_populates="received_early_closures", secondary=early_closure_recipients_association)
 
 study_leave_recipients_association = Table(
@@ -266,5 +266,5 @@ class StudyLeave(Base):
 
     sender_id = Column(Integer, ForeignKey("users.id"))
     sender = relationship("User", back_populates="sent_study_leaves", foreign_keys=[sender_id])
-    comments = relationship("Comment", back_populates="study_leave", foreign_keys="[Comment.study_leave_id]", cascade="all, delete, delete-orphan")
+    comments = relationship("Comment", back_populates="study_leave", foreign_keys="[Comment.study_leave_id]", cascade="all, delete-orphan")
     recipients = relationship("User", back_populates="received_study_leaves", secondary=study_leave_recipients_association)
