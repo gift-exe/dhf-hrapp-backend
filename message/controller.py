@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi import HTTPException, Depends, Response
 from user import utils as user_utils
+from user import schema as user_schema
 from message import utils, schema, model
 from config import security
 from sqlalchemy.orm import Session
@@ -333,6 +334,7 @@ async def get_evaluations(
 
         for eval in evaluations:
             cmts = eval.comments
+            recipients = eval.recipients
             grade = eval.grade.__dict__
             del grade['_sa_instance_state']
             del grade['created_at']
@@ -351,6 +353,11 @@ async def get_evaluations(
                 c['created_at'] = c['created_at'].isoformat()
                 c['updated_at'] = c['updated_at'].isoformat()
                 eval_dict['comments'].append(c)
+            
+            eval_dict['recipients'] = []
+            for r in recipients:
+                r = user_schema.User.to_dict(db_item=user).model_dump()
+                eval_dict['recipients'].append(r)
 
             return_evaluations.append(eval_dict)
         
@@ -459,6 +466,7 @@ async def get_all_early_closures(
 
         for lr in early_closures:
             cmts = lr.comments
+            recipients = lr.recipients
             lr = lr.__dict__
             del lr['_sa_instance_state']
             lr['created_at'] = lr['created_at'].isoformat()
@@ -470,6 +478,10 @@ async def get_all_early_closures(
                 c['created_at'] = c['created_at'].isoformat()
                 c['updated_at'] = c['updated_at'].isoformat()
                 lr['comments'].append(c)
+            lr['recipients'] = []
+            for r in recipients:
+                r = user_schema.User.to_dict(db_item=user).model_dump()
+                lr['recipients'].append(r)
             
             return_messsages.append(lr)
 
@@ -588,7 +600,7 @@ async def respond_study_leave_director(
 @router.get('/study-leaves')
 async def view_all_leave_requests(db: Session = Depends(get_db), 
                                   current_user_id = Depends(security.get_current_user)):
-    try:
+    #try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
 
         if user.role.name not in ['hr', 'admin']:
@@ -599,6 +611,7 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
 
         for lr in leave_requests:
             cmts = lr.comments
+            recipients = lr.recipients
             lr = lr.__dict__
             del lr['_sa_instance_state']
             lr['created_at'] = lr['created_at'].isoformat()
@@ -610,12 +623,18 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
                 c['created_at'] = c['created_at'].isoformat()
                 c['updated_at'] = c['updated_at'].isoformat()
                 lr['comments'].append(c)
+            lr['recipients'] = []
+            for r in recipients:
+                r = user_schema.User.to_dict(db_item=user).model_dump()
+                lr['recipients'].append(r)
             return_messsages.append(lr)
+            print(f'\n{lr}\n')
+            
 
         return Response(status_code=200, content=json.dumps(return_messsages))
     
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
+    #except Exception as e:
+    #    raise HTTPException(status_code=400, detail=json.dumps({'message':'An Error Occured', 'error': str(e)}))
 
 # share leave request with next office (head of section)
 @router.post('/share-leave-request')

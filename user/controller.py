@@ -102,9 +102,9 @@ async def set_working_period(work_period: schema.WorkPeriod,
 @router.get('/get-users')
 async def get_users(db: Session = Depends(get_db),
                     current_user_id = Depends(security.get_current_user)):
-    try:        
+    try:
         db_users = utils.get_users(db=db, user_id=current_user_id.id)
-        users = [schema.User.to_dict(user=user).model_dump() for user in db_users]
+        users = [schema.User.to_dict(db_item=user).model_dump() for user in db_users]
         
         return Response(status_code=200, content=json.dumps(users))
     except Exception as e:
