@@ -14,7 +14,7 @@ client = session.client(
 def do_upload(file_to_upload, sender_email):
     try:
         # create file name
-        name = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(10)) + '.' + file_to_upload.filename + '.' + sender_email
+        name = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(10)) + '-' + sender_email + '-' + file_to_upload.filename 
         # upload file
         client.upload_fileobj(file_to_upload.file, os.environ.get('SPACE_NAME'), name, ExtraArgs={'ACL': 'public-read'})
         return f"{os.environ.get('SPACE_EDGE_ENDPOINT')}/{os.environ.get('SPACE_NAME')}/{name}"
