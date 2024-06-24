@@ -14,7 +14,8 @@ origins = [
     'http://localhost:5173',
     '*',
     'hrapp.apps.connectedai.net',
-    'https://dhf-hrapp.onrender.com'
+    'https://dhf-hrapp.onrender.com',
+    'https://hrapp.apps.connectedai.net/'
 ]
 
 app.add_middleware(CORSMiddleware,
