@@ -245,7 +245,7 @@ async def perform_evaluation(
 ):
     try:
         user = user_utils.get_user(db=db, user_id=current_user_id.id)
-        if user.role.name != 'hos':
+        if user.role.name != 'admin':
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be head of section'}))
         
         db_evaluation = utils.create_evaluation_with_grade(db=db, evaluation=evaluation, sender=user.id)       
