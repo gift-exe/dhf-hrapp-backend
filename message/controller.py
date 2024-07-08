@@ -461,7 +461,7 @@ async def get_all_early_closures(
         if user.role.name not in ['hr', 'admin']:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr or admin'}))
             
-        early_closures = utils.get_early_closures(db=db)
+        early_closures = utils.get_all_early_closures(db=db)
         return_messsages = []
 
         for lr in early_closures:
@@ -606,7 +606,7 @@ async def view_all_leave_requests(db: Session = Depends(get_db),
         if user.role.name not in ['hr', 'admin']:
             raise HTTPException(status_code=401, detail=json.dumps({'message':'Unauthorized. Must be hr or admin'}))
             
-        leave_requests = utils.get_leave_requests(db=db)
+        leave_requests = utils.get_all_leave_requests(db=db)
         return_messsages = []
 
         for lr in leave_requests:
