@@ -32,6 +32,13 @@ def get_message(db: Session, message_id):
     except Exception as e:
         raise e
 
+def get_all_messages(db: Session):
+    try:
+        messages = db.query(model.Message).all()
+        return messages
+    except Exception as e:
+        raise e
+
 def create_comment(db: Session, comment: schema.CreateComment, sender_id):
     
     try:
@@ -67,14 +74,14 @@ def create_comment(db: Session, comment: schema.CreateComment, sender_id):
         db.rollback()
         raise e
     
-def get_leave_requests(db: Session):
+def get_all_leave_requests(db: Session):
     try:
         leave_requests = db.query(model.StudyLeave).all()
         return leave_requests
     except Exception as e:
         raise e
     
-def get_early_closures(db: Session):
+def get_all_early_closures(db: Session):
     try:
         return db.query(model.EarlyClosure).all()
     except Exception as e:
